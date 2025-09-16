@@ -15,7 +15,12 @@
     {
       "parameters": {
         "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/questionnaires/questionnaire-sso-initiation-entra.json",
-        "responseFormat": "json"
+        "responseFormat": "json",
+        "options": {
+          "retryOnFail": true,
+          "maxRetries": 3,
+          "timeout": 5000
+        }
       },
       "id": "FetchQuestionnaire",
       "name": "Fetch Questionnaire JSON",
@@ -55,24 +60,46 @@
     },
     {
       "parameters": {
-        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/templates/entra_app_onboarding.yaml",
-        "responseFormat": "string"
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.is_complete}}",
+              "operation": "is true"
+            }
+          ]
+        }
       },
-      "id": "FetchTemplate",
-      "name": "Fetch YAML Template",
-      "type": "n8n-nodes-base.httpRequest",
+      "id": "CheckCompletion",
+      "name": "Check Questionnaire Complete",
+      "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [1000, 300]
     },
     {
       "parameters": {
-        "functionCode": "const yaml = $json[\"body\"];\n// Replace placeholders with answers and metadata (pseudo logic)\nlet filledYaml = yaml\n  .replace('{{app_id}}', $json.app_id)\n  .replace('{{app_name}}', $json.app_name);\n// Add more replacements as needed\nreturn [{ yaml: filledYaml }];"
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/templates/entra_app_onboarding.yaml",
+        "responseFormat": "string",
+        "options": {
+          "retryOnFail": true,
+          "maxRetries": 3,
+          "timeout": 5000
+        }
+      },
+      "id": "FetchTemplate",
+      "name": "Fetch YAML Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1200, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "const yaml = $json[\"body\"];\nlet filledYaml = yaml\n  .replace('{{app_id}}', $json.app_id)\n  .replace('{{app_name}}', $json.app_name);\nreturn [{ yaml: filledYaml, app_id: $json.app_id }];"
       },
       "id": "FillTemplate",
       "name": "Fill Template",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [1200, 300]
+      "position": [1400, 200]
     },
     {
       "parameters": {
@@ -82,7 +109,11 @@
         "sendBody": true,
         "jsonBody": true,
         "bodyParametersJson": "={\n  \"message\": \"feat: add onboarding config for app-\" + $json.app_id,\n  \"content\": Buffer.from($json.yaml).toString(\"base64\"),\n  \"branch\": \"onboard-app-\" + $json.app_id\n}",
-        "options": {}
+        "options": {
+          "retryOnFail": true,
+          "maxRetries": 3,
+          "timeout": 5000
+        }
       },
       "id": "CreatePR",
       "name": "Create GitHub PR",
@@ -91,7 +122,7 @@
       "credentials": {
         "githubApi": "CRED.github"
       },
-      "position": [1400, 300]
+      "position": [1600, 200]
     },
     {
       "parameters": {
@@ -107,7 +138,7 @@
       "credentials": {
         "postgres": "CRED.postgres"
       },
-      "position": [1600, 300]
+      "position": [1800, 200]
     },
     {
       "parameters": {},
@@ -172,7 +203,25 @@
       "main": [
         [
           {
+            "node": "CheckCompletion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckCompletion": {
+      "main": [
+        [
+          {
             "node": "FetchTemplate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Webhook",
             "type": "main",
             "index": 0
           }
@@ -232,7 +281,7 @@
     "author": "n8n Architect Pro",
     "createdAt": "2025-09-15T00:00:00Z",
     "changelog": [
-      "feat: initial workflow for Entra ID onboarding via questionnaire (multi-step)"
+      "feat: workflow with Q&A loop, retries, and timeouts for standards compliance"
     ]
   },
   "id": "entra-id-onboarding"
