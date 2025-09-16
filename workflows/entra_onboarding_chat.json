@@ -21,137 +21,8 @@
       "name": "Get Conversation State",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 1,
-      "credentials": {
-        "postgres": "CRED.postgres"
-      },
+      "credentials": { "postgres": "CRED.postgres" },
       "position": [400, 300]
-    },
-    {
-      "parameters": {
-        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/questionnaires/questionnaire-sso-initiation-entra.json",
-        "responseFormat": "json",
-        "options": {
-          "retryOnFail": true,
-          "maxRetries": 3,
-          "timeout": 5000
-        }
-      },
-      "id": "FetchQuestionnaire",
-      "name": "Fetch Questionnaire JSON",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "position": [600, 300]
-    },
-    {
-      "parameters": {
-        "operation": "insert",
-        "table": "entra_conversation_answers",
-        "columns": ["user_id", "question_id", "answer"],
-        "values": "={{[$json[\"userId\"], $json[\"questionId\"], $json[\"message\"]]}}"
-      },
-      "id": "SaveAnswer",
-      "name": "Save Answer",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
-      "credentials": {
-        "postgres": "CRED.postgres"
-      },
-      "position": [800, 300]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{$json.is_complete}}",
-              "operation": "is true"
-            }
-          ]
-        }
-      },
-      "id": "CheckCompletion",
-      "name": "Check Questionnaire Complete",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [1000, 300]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={ {\"status\":\"in_progress\",\"next_question\":$json[\"next_question\"],\"options\":$json[\"options\"]} }"
-      },
-      "id": "RespondNextQuestion",
-      "name": "Respond to Webhook (Next Question)",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
-      "position": [1200, 500]
-    },
-    {
-      "parameters": {
-        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/templates/entra_app_onboarding.yaml",
-        "responseFormat": "string",
-        "options": {
-          "retryOnFail": true,
-          "maxRetries": 3,
-          "timeout": 5000
-        }
-      },
-      "id": "FetchTemplate",
-      "name": "Fetch YAML Template",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "position": [1200, 200]
-    },
-    {
-      "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "app_name",
-              "value": "={{$json.app_name || \"default_app\"}}"
-            }
-          ]
-        }
-      },
-      "id": "SetAppName",
-      "name": "Set App Name",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
-      "position": [1350, 200]
-    },
-    {
-      "parameters": {
-        "functionCode": "const yaml = $json[\"body\"];\nlet filledYaml = yaml\n  .replace('{{app_id}}', $json.app_id)\n  .replace('{{app_name}}', $json.app_name);\nreturn [{ yaml: filledYaml, app_id: $json.app_id }];"
-      },
-      "id": "FillTemplate",
-      "name": "Fill Template",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [1500, 200]
-    },
-    {
-      "parameters": {
-        "url": "https://api.github.com/repos/GoyaAcademy/Entra-ID-Onboarding-Automation/contents/templates/app-{{$json.app_id}}.yaml",
-        "method": "PUT",
-        "authentication": "predefinedCredentialType",
-        "sendBody": true,
-        "jsonBody": true,
-        "bodyParametersJson": "={\n  \"message\": \"feat: add onboarding config for app-\" + $json.app_id,\n  \"content\": Buffer.from($json.yaml).toString(\"base64\"),\n  \"branch\": \"onboard-app-\" + $json.app_id\n}",
-        "options": {
-          "retryOnFail": true,
-          "maxRetries": 3,
-          "retryWait": 2000,
-          "timeout": 10000
-        }
-      },
-      "id": "CreatePR",
-      "name": "Create GitHub PR",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "credentials": {
-        "githubApi": "CRED.github"
-      },
-      "position": [1700, 200]
     },
     {
       "parameters": {
@@ -168,7 +39,150 @@
       "name": "Set Correlation ID",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
-      "position": [1850, 200]
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/questionnaires/questionnaire-sso-initiation-entra.json",
+        "responseFormat": "json",
+        "options": {
+          "retryOnFail": true,
+          "maxRetries": 3,
+          "timeout": 5000
+        }
+      },
+      "id": "FetchQuestionnaire",
+      "name": "Fetch Questionnaire JSON",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "entra_conversation_answers",
+        "columns": ["user_id", "question_id", "answer"],
+        "values": "={{[$json[\"userId\"], $json[\"questionId\"], $json[\"message\"]]}}"
+      },
+      "id": "SaveAnswer",
+      "name": "Save Answer",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": { "postgres": "CRED.postgres" },
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.is_complete}}",
+              "operation": "is true"
+            }
+          ]
+        }
+      },
+      "id": "CheckCompletion",
+      "name": "Check Questionnaire Complete",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1200, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ {\"status\":\"in_progress\",\"next_question\":$json[\"next_question\"],\"options\":$json[\"options\"]} }"
+      },
+      "id": "RespondNextQuestion",
+      "name": "Respond to Webhook (Next Question)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1400, 520]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/templates/entra_app_onboarding.yaml",
+        "responseFormat": "string",
+        "options": {
+          "retryOnFail": true,
+          "maxRetries": 3,
+          "timeout": 5000
+        }
+      },
+      "id": "FetchTemplate",
+      "name": "Fetch YAML Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1400, 140]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "app_name",
+              "value": "={{$json.app_name || \"default_app\"}}"
+            }
+          ]
+        }
+      },
+      "id": "SetAppName",
+      "name": "Set App Name",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1580, 140]
+    },
+    {
+      "parameters": {
+        "functionCode": "const yaml = $json[\"body\"];\nlet filledYaml = yaml\n  .replace('{{app_id}}', $json.app_id)\n  .replace('{{app_name}}', $json.app_name);\nreturn [{ yaml: filledYaml, app_id: $json.app_id, correlationId: $json.correlationId }];"
+      },
+      "id": "FillTemplate",
+      "name": "Fill Template",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1760, 140]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/GoyaAcademy/Entra-ID-Onboarding-Automation/contents/templates/app-{{$json.app_id}}.yaml",
+        "method": "PUT",
+        "authentication": "predefinedCredentialType",
+        "sendBody": true,
+        "jsonBody": true,
+        "bodyParametersJson": "={\n  \"message\": \"feat: add onboarding config for app-\" + $json.app_id,\n  \"content\": Buffer.from($json.yaml).toString(\"base64\"),\n  \"branch\": \"onboard-app-\" + $json.app_id\n}",
+        "options": {
+          "retryOnFail": true,
+          "maxRetries": 3,
+          "retryWait": 2000,
+          "timeout": 10000,
+          "ignoreResponseCode": true,
+          "fullResponse": true
+        }
+      },
+      "id": "CreatePR",
+      "name": "Create GitHub PR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "credentials": { "githubApi": "CRED.github" },
+      "position": [1960, 140]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.statusCode}}",
+              "operation": "smaller",
+              "value2": 400
+            }
+          ]
+        }
+      },
+      "id": "CheckPRStatus",
+      "name": "Check PR Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [2140, 140]
     },
     {
       "parameters": {
@@ -181,26 +195,44 @@
       "name": "Log Event",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 1,
-      "credentials": {
-        "postgres": "CRED.postgres"
+      "credentials": { "postgres": "CRED.postgres" },
+      "position": [2320, 80]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ {\"status\":\"completed\",\"app_id\":$json.app_id,\"message\":\"Onboarding config saved to GitHub branch.\"} }"
       },
-      "position": [2000, 200]
+      "id": "RespondCompletion",
+      "name": "Respond to Webhook (Completed)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2500, 80]
     },
     {
       "parameters": {
         "operation": "insert",
         "table": "entra_workflow_logs",
         "columns": ["event", "workflow", "node", "status", "error", "timestamp", "level", "correlationId"],
-        "values": "={{['app_onboarding','entra-id-onboarding','CreatePR','FAILURE',$json[\"message\"] || 'unknown error',$now,'ERROR',$json.correlationId]}}"
+        "values": "={{['app_onboarding','entra-id-onboarding','CreatePR','FAILURE', JSON.stringify({statusCode: $json.statusCode, message: $json.body?.message, errors: $json.body?.errors}), $now,'ERROR',$json.correlationId]}}"
       },
       "id": "LogPRFailure",
       "name": "Log PR Failure",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 1,
-      "credentials": {
-        "postgres": "CRED.postgres"
+      "credentials": { "postgres": "CRED.postgres" },
+      "position": [2320, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ {\"status\":\"failed\",\"reason\": $json.body?.message || 'GitHub API error', \"statusCode\": $json.statusCode, \"correlationId\": $json.correlationId} }"
       },
-      "position": [1900, 400]
+      "id": "RespondPRFailure",
+      "name": "Respond to Webhook (PR Failed)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2500, 220]
     },
     {
       "parameters": {},
@@ -208,7 +240,7 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [200, 600]
+      "position": [200, 620]
     },
     {
       "parameters": {
@@ -221,10 +253,8 @@
       "name": "Log Error",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 1,
-      "credentials": {
-        "postgres": "CRED.postgres"
-      },
-      "position": [400, 600]
+      "credentials": { "postgres": "CRED.postgres" },
+      "position": [400, 620]
     }
   ],
   "connections": {
@@ -232,6 +262,9 @@
       "main": [[{ "node": "GetConversationState", "type": "main", "index": 0 }]]
     },
     "GetConversationState": {
+      "main": [[{ "node": "SetCorrelationId", "type": "main", "index": 0 }]]
+    },
+    "SetCorrelationId": {
       "main": [[{ "node": "FetchQuestionnaire", "type": "main", "index": 0 }]]
     },
     "FetchQuestionnaire": {
@@ -256,13 +289,21 @@
       "main": [[{ "node": "CreatePR", "type": "main", "index": 0 }]]
     },
     "CreatePR": {
+      "main": [[{ "node": "CheckPRStatus", "type": "main", "index": 0 }]]
+    },
+    "CheckPRStatus": {
       "main": [
-        [{ "node": "SetCorrelationId", "type": "main", "index": 0 }],
-        [{ "node": "LogPRFailure", "type": "main", "index": 0 }]
+        [
+          { "node": "LogEvent", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "LogPRFailure", "type": "main", "index": 0 },
+          { "node": "RespondPRFailure", "type": "main", "index": 0 }
+        ]
       ]
     },
-    "SetCorrelationId": {
-      "main": [[{ "node": "LogEvent", "type": "main", "index": 0 }]]
+    "LogEvent": {
+      "main": [[{ "node": "RespondCompletion", "type": "main", "index": 0 }]]
     },
     "ErrorTrigger": {
       "main": [[{ "node": "LogError", "type": "main", "index": 0 }]]
@@ -271,14 +312,16 @@
   "settings": {},
   "version": 1,
   "metadata": {
-    "version": "1.0.3",
-    "tags": ["semver:1.0.3","entra-id","onboarding","chat","fixed","retry"],
+    "version": "1.0.4",
+    "tags": ["semver:1.0.4","entra-id","onboarding","chat","fixed","retry","pr-status-branching"],
     "author": "n8n Architect Pro",
     "createdAt": "2025-09-16T00:00:00Z",
     "changelog": [
-      "fix: added retry + error handling for CreatePR",
-      "feat: new LogPRFailure node for GitHub errors",
-      "chore: bumped workflow version to 1.0.3"
+      "move: SetCorrelationId earlier so both branches inherit it",
+      "feat: HTTP Request now retries, ignores non-2xx, and returns fullResponse",
+      "feat: added CheckPRStatus IF node to branch success/failure",
+      "feat: added RespondCompletion and RespondPRFailure so webhook always replies",
+      "fix: connected Log PR Failure via IF false output (no illegal multi-output from HTTP node)"
     ]
   },
   "id": "entra-id-onboarding"
