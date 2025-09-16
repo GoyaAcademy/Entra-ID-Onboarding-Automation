@@ -1,0 +1,89 @@
+{
+  "decision_matrix": [
+    {
+      "criteria": ["Users primarily start from company portal", "App must appear in Entra MyApps/Office launcher", "Conditional Access or MFA enforcement required"],
+      "recommendation": "IdP-initiated",
+      "rationale": "Portal-driven access and pre-login policy enforcement are best handled by IdP initiation."
+    },
+    {
+      "criteria": ["Users often access app via deep links or bookmarks", "App supports JIT provisioning or needs custom attributes", "App requires SP-signed AuthnRequests"],
+      "recommendation": "SP-initiated",
+      "rationale": "Deep linking, attribute context, and signed requests align better with SP initiation."
+    },
+    {
+      "criteria": ["Application is SaaS with strict vendor-defined initiation flow"],
+      "recommendation": "Follow vendor guidance",
+      "rationale": "Some SaaS vendors allow only one flow; their documentation overrides preference."
+    },
+    {
+      "criteria": ["App is multi-tenant with routing based on identity attributes", "Guest or partner users must be routed centrally"],
+      "recommendation": "IdP-initiated",
+      "rationale": "Central IdP routing ensures correct tenant selection and simplifies B2B access."
+    },
+    {
+      "criteria": ["App requires API authentication alongside web SSO", "Mobile/native clients rely on SDK integration", "Non-browser clients must authenticate"],
+      "recommendation": "SP-initiated",
+      "rationale": "APIs and SDKs often depend on SP-driven requests with token exchange."
+    },
+    {
+      "criteria": ["Compliance or audit logging requires all auth to pass through IdP", "Device compliance or step-up auth required"],
+      "recommendation": "IdP-initiated",
+      "rationale": "Centralized logging and CA policies enforceable only in IdP flows."
+    },
+    {
+      "criteria": ["Migration from legacy IdP that used SP initiation", "App configured for signed SP requests and metadata exchange"],
+      "recommendation": "SP-initiated",
+      "rationale": "Maintains continuity and avoids breaking existing integrations."
+    },
+    {
+      "criteria": ["High availability or failover authentication paths are required", "App must operate even if IdP is down"],
+      "recommendation": "SP-initiated",
+      "rationale": "Failover and HA strategies often rely on SP-driven initiation to reduce central IdP dependency."
+    },
+    {
+      "criteria": ["Federated logout across multiple applications is required", "Centralized session management is critical"],
+      "recommendation": "IdP-initiated",
+      "rationale": "Federated logout is best enforced when the IdP controls session termination."
+    },
+    {
+      "criteria": ["Hybrid access scenario where app is accessed internally and externally (via App Proxy)", "Need to simplify user experience for external users"],
+      "recommendation": "Dual configuration (IdP + SP)",
+      "rationale": "Internal users may prefer SP initiation for direct access, while external users benefit from IdP entry."
+    },
+    {
+      "criteria": ["App is API-only or service-account heavy with no user portal", "CLI/automation requires token acquisition"],
+      "recommendation": "SP-initiated (or OIDC flows)",
+      "rationale": "Service accounts and APIs rely on SP-driven token requests, not user-driven IdP flows."
+    },
+    {
+      "criteria": ["App supports both SP and IdP initiation", "No strong technical or compliance driver one way or the other"],
+      "recommendation": "Dual configuration (enable both)",
+      "rationale": "Many enterprises enable both to maximize flexibility and user choice."
+    },
+    {
+      "criteria": ["Privileged access or admin functions require extra policy enforcement", "Step-up MFA or PIM activation required"],
+      "recommendation": "IdP-initiated",
+      "rationale": "Privileged workflows should always start at IdP to guarantee enforcement of stricter access controls."
+    },
+    {
+      "criteria": ["App is difficult to configure for SSO", "Vendor support is limited or inconsistent"],
+      "recommendation": "IdP-initiated",
+      "rationale": "Centralizing config at the IdP reduces complexity and avoids vendor lock-in."
+    },
+    {
+      "criteria": ["Users rely on email links, magic links, or embedded resources", "App requires contextual deep linking"],
+      "recommendation": "SP-initiated",
+      "rationale": "Direct links bypass the IdP portal and require SP to trigger authentication."
+    },
+    {
+      "criteria": ["Strict compliance or regulated data environment (HIPAA, PCI, FedRAMP)", "Full auditing of all logins required"],
+      "recommendation": "IdP-initiated",
+      "rationale": "Central control at the IdP enforces compliance and simplifies evidence collection."
+    },
+    {
+      "criteria": ["Future-proofing toward OIDC, SCIM, or passwordless roadmap", "App will evolve to modern protocols"],
+      "recommendation": "Prefer IdP-initiated where possible, fallback to SP-initiated if vendor mandates",
+      "rationale": "Modern identity standards integrate better with IdP-centric approaches."
+    }
+  ]
+}
