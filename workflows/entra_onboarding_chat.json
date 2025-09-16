@@ -20,7 +20,7 @@
       "id": "GetConversationState",
       "name": "Get Conversation State",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
+      "typeVersion": 2.6,
       "credentials": { "postgres": "CRED.postgres" },
       "position": [400, 300]
     },
@@ -67,7 +67,7 @@
       "id": "SaveAnswer",
       "name": "Save Answer",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
+      "typeVersion": 2.6,
       "credentials": { "postgres": "CRED.postgres" },
       "position": [1000, 300]
     },
