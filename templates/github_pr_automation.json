@@ -1,0 +1,52 @@
+[
+  {
+    "method": "POST",
+    "endpoint": "https://api.github.com/repos/{{owner}}/{{repo}}/git/refs",
+    "headers": {
+      "Authorization": "Bearer {{GITHUB_TOKEN}}",
+      "Accept": "application/vnd.github.v3+json"
+    },
+    "body": {
+      "ref": "refs/heads/{{new_branch_name}}",
+      "sha": "{{main_branch_sha}}"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "https://api.github.com/repos/{{owner}}/{{repo}}/contents/{{file_path}}",
+    "headers": {
+      "Authorization": "Bearer {{GITHUB_TOKEN}}",
+      "Accept": "application/vnd.github.v3+json"
+    },
+    "body": {
+      "message": "Add new YAML config file",
+      "content": "{{base64_encoded_file_content}}",
+      "branch": "{{new_branch_name}}"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "https://api.github.com/repos/{{owner}}/{{repo}}/pulls",
+    "headers": {
+      "Authorization": "Bearer {{GITHUB_TOKEN}}",
+      "Accept": "application/vnd.github.v3+json"
+    },
+    "body": {
+      "title": "Add YAML config file",
+      "head": "{{new_branch_name}}",
+      "base": "main",
+      "body": "This PR adds a new YAML config file."
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "https://api.github.com/repos/{{owner}}/{{repo}}/pulls/{{pr_number}}/requested_reviewers",
+    "headers": {
+      "Authorization": "Bearer {{GITHUB_TOKEN}}",
+      "Accept": "application/vnd.github.v3+json"
+    },
+    "body": {
+      "team_reviewers": ["iam-engineering"]
+    }
+  }
+]
