@@ -297,13 +297,15 @@
           { "node": "LogEvent", "type": "main", "index": 0 }
         ],
         [
-          { "node": "LogPRFailure", "type": "main", "index": 0 },
-          { "node": "RespondPRFailure", "type": "main", "index": 0 }
+          { "node": "LogPRFailure", "type": "main", "index": 0 }
         ]
       ]
     },
     "LogEvent": {
       "main": [[{ "node": "RespondCompletion", "type": "main", "index": 0 }]]
+    },
+    "LogPRFailure": {
+      "main": [[{ "node": "RespondPRFailure", "type": "main", "index": 0 }]]
     },
     "ErrorTrigger": {
       "main": [[{ "node": "LogError", "type": "main", "index": 0 }]]
@@ -312,16 +314,14 @@
   "settings": {},
   "version": 1,
   "metadata": {
-    "version": "1.0.4",
-    "tags": ["semver:1.0.4","entra-id","onboarding","chat","fixed","retry","pr-status-branching"],
+    "version": "1.0.5",
+    "tags": ["semver:1.0.5","entra-id","onboarding","chat","b8b","chain-error-handler"],
     "author": "n8n Architect Pro",
     "createdAt": "2025-09-16T00:00:00Z",
     "changelog": [
-      "move: SetCorrelationId earlier so both branches inherit it",
-      "feat: HTTP Request now retries, ignores non-2xx, and returns fullResponse",
-      "feat: added CheckPRStatus IF node to branch success/failure",
-      "feat: added RespondCompletion and RespondPRFailure so webhook always replies",
-      "fix: connected Log PR Failure via IF false output (no illegal multi-output from HTTP node)"
+      "fix: b8b error branch now chained LogPRFailure -> RespondPRFailure",
+      "chore: increment version",
+      "docs: for n8n v1.111.0+"
     ]
   },
   "id": "entra-id-onboarding"
