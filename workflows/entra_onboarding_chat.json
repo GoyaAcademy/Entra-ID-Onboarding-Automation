@@ -9,7 +9,7 @@
       "id": "WebhookTrigger",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [200, 300]
     },
     {
@@ -20,7 +20,7 @@
       "id": "GetConversationState",
       "name": "Get Conversation State",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "typeVersion": 2,
       "credentials": { "postgres": "CRED.postgres" },
       "position": [400, 300]
     },
@@ -38,7 +38,7 @@
       "id": "SetCorrelationId",
       "name": "Set Correlation ID",
       "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [600, 300]
     },
     {
@@ -54,7 +54,7 @@
       "id": "FetchQuestionnaire",
       "name": "Fetch Questionnaire JSON",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [800, 300]
     },
     {
@@ -67,7 +67,7 @@
       "id": "SaveAnswer",
       "name": "Save Answer",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "typeVersion": 2,
       "credentials": { "postgres": "CRED.postgres" },
       "position": [1000, 300]
     },
@@ -85,7 +85,7 @@
       "id": "CheckCompletion",
       "name": "Check Questionnaire Complete",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [1200, 300]
     },
     {
@@ -96,7 +96,7 @@
       "id": "RespondNextQuestion",
       "name": "Respond to Webhook (Next Question)",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [1400, 520]
     },
     {
@@ -112,7 +112,7 @@
       "id": "FetchTemplate",
       "name": "Fetch YAML Template",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [1400, 140]
     },
     {
@@ -129,7 +129,7 @@
       "id": "SetAppName",
       "name": "Set App Name",
       "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [1580, 140]
     },
     {
@@ -139,7 +139,7 @@
       "id": "FillTemplate",
       "name": "Fill Template",
       "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [1760, 140]
     },
     {
@@ -162,7 +162,7 @@
       "id": "CreatePR",
       "name": "Create GitHub PR",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "credentials": { "githubApi": "CRED.github" },
       "position": [1960, 140]
     },
@@ -181,7 +181,7 @@
       "id": "CheckPRStatus",
       "name": "Check PR Status",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [2140, 140]
     },
     {
@@ -194,7 +194,7 @@
       "id": "LogEvent",
       "name": "Log Event",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "credentials": { "postgres": "CRED.postgres" },
       "position": [2320, 80]
     },
@@ -206,7 +206,7 @@
       "id": "RespondCompletion",
       "name": "Respond to Webhook (Completed)",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [2500, 80]
     },
     {
@@ -219,7 +219,7 @@
       "id": "LogPRFailure",
       "name": "Log PR Failure",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "credentials": { "postgres": "CRED.postgres" },
       "position": [2320, 220]
     },
@@ -231,7 +231,7 @@
       "id": "RespondPRFailure",
       "name": "Respond to Webhook (PR Failed)",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [2500, 220]
     },
     {
@@ -239,7 +239,7 @@
       "id": "ErrorTrigger",
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [200, 620]
     },
     {
@@ -252,7 +252,7 @@
       "id": "LogError",
       "name": "Log Error",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "credentials": { "postgres": "CRED.postgres" },
       "position": [400, 620]
     }
@@ -293,12 +293,8 @@
     },
     "CheckPRStatus": {
       "main": [
-        [
-          { "node": "LogEvent", "type": "main", "index": 0 }
-        ],
-        [
-          { "node": "LogPRFailure", "type": "main", "index": 0 }
-        ]
+        [{ "node": "LogEvent", "type": "main", "index": 0 }],
+        [{ "node": "LogPRFailure", "type": "main", "index": 0 }]
       ]
     },
     "LogEvent": {
@@ -314,14 +310,14 @@
   "settings": {},
   "version": 1,
   "metadata": {
-    "version": "1.0.5",
-    "tags": ["semver:1.0.5","entra-id","onboarding","chat","b8b","chain-error-handler"],
+    "version": "1.0.6",
+    "tags": ["semver:1.0.6","entra-id","onboarding","chat","b8b","latest-nodes"],
     "author": "n8n Architect Pro",
     "createdAt": "2025-09-16T00:00:00Z",
     "changelog": [
-      "fix: b8b error branch now chained LogPRFailure -> RespondPRFailure",
-      "chore: increment version",
-      "docs: for n8n v1.111.0+"
+      "update: all nodes to latest typeVersion",
+      "fix: validated single-output connections, chained error branch",
+      "chore: version bump"
     ]
   },
   "id": "entra-id-onboarding"
