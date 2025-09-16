@@ -1,0 +1,36 @@
+application:
+  id: "{{application_id}}"
+  name: "{{application_name}}"
+  environment: "{{environment}}" # e.g., dev, test, prod
+  custodian: "{{custodian_name}}"
+  architect: "{{architect_name}}"
+  technology:
+    os: "{{operating_system}}"
+    db: "{{database}}"
+    architecture: "{{application_architecture}}"
+
+pattern:
+  type: "{{sso_type}}" # sso-idp or sso-sp
+  justification: "{{justification_text}}"
+
+entra_id:
+  tenant_id: "{{entra_tenant_id}}"
+  client_id: "{{entra_client_id}}"
+  redirect_urls:
+    - "{{redirect_url_1}}"
+    - "{{redirect_url_2}}"
+  reply_urls:
+    - "{{reply_url_1}}"
+    - "{{reply_url_2}}"
+  logout_urls:
+    - "{{logout_url_1}}"
+    - "{{logout_url_2}}"
+  saml_metadata_url: "{{saml_metadata_url}}"
+  certificates:
+    - "{{certificate_1}}"
+    - "{{certificate_2}}"
+
+metadata:
+  createdBy: "{{creator}}"
+  createdAt: "{{creation_timestamp}}"
+  correlationId: "{{correlation_id}}"
