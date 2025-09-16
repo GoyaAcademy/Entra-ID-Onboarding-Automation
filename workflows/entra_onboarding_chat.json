@@ -78,7 +78,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ {\"status\": \"in_progress\", \"next_question\": $json.next_question, \"options\": $json.options} }}"
+        "responseBody": "={ {\"status\":\"in_progress\",\"next_question\":$json[\"next_question\"],\"options\":$json[\"options\"]} }"
       },
       "id": "RespondNextQuestion",
       "name": "Respond to Webhook (Next Question)",
@@ -140,7 +140,8 @@
         "options": {
           "retryOnFail": true,
           "maxRetries": 3,
-          "timeout": 5000
+          "retryWait": 2000,
+          "timeout": 10000
         }
       },
       "id": "CreatePR",
@@ -174,7 +175,7 @@
         "operation": "insert",
         "table": "entra_workflow_logs",
         "columns": ["event", "workflow", "node", "status", "timestamp", "level", "correlationId"],
-        "values": "={{['app_onboarding','entra-id-onboarding','Create GitHub PR','SUCCESS', $now, 'INFO', $json.correlationId]}}"
+        "values": "={{['app_onboarding','entra-id-onboarding','Create GitHub PR','SUCCESS',$now,'INFO',$json.correlationId]}}"
       },
       "id": "LogEvent",
       "name": "Log Event",
@@ -184,6 +185,22 @@
         "postgres": "CRED.postgres"
       },
       "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "entra_workflow_logs",
+        "columns": ["event", "workflow", "node", "status", "error", "timestamp", "level", "correlationId"],
+        "values": "={{['app_onboarding','entra-id-onboarding','CreatePR','FAILURE',$json[\"message\"] || 'unknown error',$now,'ERROR',$json.correlationId]}}"
+      },
+      "id": "LogPRFailure",
+      "name": "Log PR Failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": "CRED.postgres"
+      },
+      "position": [1900, 400]
     },
     {
       "parameters": {},
@@ -198,7 +215,7 @@
         "operation": "insert",
         "table": "entra_workflow_logs",
         "columns": ["event", "workflow", "node", "status", "error", "timestamp", "level"],
-        "values": "={{['app_onboarding','entra-id-onboarding','ErrorTrigger','FAILURE', $json.error.message, $now, 'ERROR']}}"
+        "values": "={{['app_onboarding','entra-id-onboarding','ErrorTrigger','FAILURE',$json.error.message,$now,'ERROR']}}"
       },
       "id": "LogError",
       "name": "Log Error",
@@ -239,7 +256,10 @@
       "main": [[{ "node": "CreatePR", "type": "main", "index": 0 }]]
     },
     "CreatePR": {
-      "main": [[{ "node": "SetCorrelationId", "type": "main", "index": 0 }]]
+      "main": [
+        [{ "node": "SetCorrelationId", "type": "main", "index": 0 }],
+        [{ "node": "LogPRFailure", "type": "main", "index": 0 }]
+      ]
     },
     "SetCorrelationId": {
       "main": [[{ "node": "LogEvent", "type": "main", "index": 0 }]]
@@ -251,14 +271,14 @@
   "settings": {},
   "version": 1,
   "metadata": {
-    "version": "1.0.1",
-    "tags": ["semver:1.0.1","entra-id","onboarding","chat","fixed"],
+    "version": "1.0.3",
+    "tags": ["semver:1.0.3","entra-id","onboarding","chat","fixed","retry"],
     "author": "n8n Architect Pro",
     "createdAt": "2025-09-16T00:00:00Z",
     "changelog": [
-      "fix: corrected RespondNextQuestion expression syntax",
-      "feat: added SetAppName node to ensure app_name availability",
-      "feat: added SetCorrelationId node for structured logging compliance"
+      "fix: added retry + error handling for CreatePR",
+      "feat: new LogPRFailure node for GitHub errors",
+      "chore: bumped workflow version to 1.0.3"
     ]
   },
   "id": "entra-id-onboarding"
