@@ -1,5 +1,5 @@
 {
-  "name": "Entra ID Onboarding Assistant",
+  "name": "Entra ID Onboarding Assistant (Chat Loop)",
   "nodes": [
     {
       "parameters": {
@@ -11,6 +11,20 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT current_question, app_id, is_complete FROM entra_conversation_state WHERE user_id = {{$json[\"userId\"]}}"
+      },
+      "id": "GetConversationState",
+      "name": "Get Conversation State",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": "CRED.postgres"
+      },
+      "position": [400, 300]
     },
     {
       "parameters": {
@@ -26,20 +40,6 @@
       "name": "Fetch Questionnaire JSON",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [400, 300]
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT current_question, app_id FROM entra_conversation_state WHERE user_id = {{$json[\"userId\"]}}"
-      },
-      "id": "GetConversationState",
-      "name": "Get Conversation State",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
-      "credentials": {
-        "postgres": "CRED.postgres"
-      },
       "position": [600, 300]
     },
     {
@@ -74,6 +74,17 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ {\"status\": \"in_progress\", \"next_question\": $json.next_question, \"options\": $json.options } }"
+      },
+      "id": "RespondNextQuestion",
+      "name": "Respond to Webhook (Next Question)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1200, 500]
     },
     {
       "parameters": {
@@ -170,17 +181,6 @@
       "main": [
         [
           {
-            "node": "FetchQuestionnaire",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "FetchQuestionnaire": {
-      "main": [
-        [
-          {
             "node": "GetConversationState",
             "type": "main",
             "index": 0
@@ -189,6 +189,17 @@
       ]
     },
     "GetConversationState": {
+      "main": [
+        [
+          {
+            "node": "FetchQuestionnaire",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchQuestionnaire": {
       "main": [
         [
           {
@@ -221,7 +232,7 @@
         ],
         [
           {
-            "node": "Webhook",
+            "node": "RespondNextQuestion",
             "type": "main",
             "index": 0
           }
@@ -277,11 +288,11 @@
   "version": 1,
   "metadata": {
     "version": "1.0.0",
-    "tags": ["semver:1.0.0","entra-id","onboarding","demo"],
+    "tags": ["semver:1.0.0","entra-id","onboarding","chat","demo"],
     "author": "n8n Architect Pro",
     "createdAt": "2025-09-15T00:00:00Z",
     "changelog": [
-      "feat: workflow with Q&A loop, retries, and timeouts for standards compliance"
+      "feat: regenerate workflow with conversation loop, Respond to Webhook, and proper connections"
     ]
   },
   "id": "entra-id-onboarding"
