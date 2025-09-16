@@ -78,7 +78,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={ {\"status\": \"in_progress\", \"next_question\": $json.next_question, \"options\": $json.options } }"
+        "responseBody": "={{ {\"status\": \"in_progress\", \"next_question\": $json.next_question, \"options\": $json.options} }}"
       },
       "id": "RespondNextQuestion",
       "name": "Respond to Webhook (Next Question)",
@@ -104,13 +104,30 @@
     },
     {
       "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "app_name",
+              "value": "={{$json.app_name || \"default_app\"}}"
+            }
+          ]
+        }
+      },
+      "id": "SetAppName",
+      "name": "Set App Name",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1350, 200]
+    },
+    {
+      "parameters": {
         "functionCode": "const yaml = $json[\"body\"];\nlet filledYaml = yaml\n  .replace('{{app_id}}', $json.app_id)\n  .replace('{{app_name}}', $json.app_name);\nreturn [{ yaml: filledYaml, app_id: $json.app_id }];"
       },
       "id": "FillTemplate",
       "name": "Fill Template",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [1400, 200]
+      "position": [1500, 200]
     },
     {
       "parameters": {
@@ -133,14 +150,31 @@
       "credentials": {
         "githubApi": "CRED.github"
       },
-      "position": [1600, 200]
+      "position": [1700, 200]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "correlationId",
+              "value": "={{$json.userId || $json.app_id || $now}}"
+            }
+          ]
+        }
+      },
+      "id": "SetCorrelationId",
+      "name": "Set Correlation ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1850, 200]
     },
     {
       "parameters": {
         "operation": "insert",
         "table": "entra_workflow_logs",
-        "columns": ["event", "workflow", "node", "status", "timestamp", "level"],
-        "values": "={{['app_onboarding','entra-id-onboarding','Create GitHub PR','SUCCESS', $now, 'INFO']}}"
+        "columns": ["event", "workflow", "node", "status", "timestamp", "level", "correlationId"],
+        "values": "={{['app_onboarding','entra-id-onboarding','Create GitHub PR','SUCCESS', $now, 'INFO', $json.correlationId]}}"
       },
       "id": "LogEvent",
       "name": "Log Event",
@@ -149,7 +183,7 @@
       "credentials": {
         "postgres": "CRED.postgres"
       },
-      "position": [1800, 200]
+      "position": [2000, 200]
     },
     {
       "parameters": {},
@@ -178,121 +212,53 @@
   ],
   "connections": {
     "Webhook": {
-      "main": [
-        [
-          {
-            "node": "GetConversationState",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "GetConversationState", "type": "main", "index": 0 }]]
     },
     "GetConversationState": {
-      "main": [
-        [
-          {
-            "node": "FetchQuestionnaire",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "FetchQuestionnaire", "type": "main", "index": 0 }]]
     },
     "FetchQuestionnaire": {
-      "main": [
-        [
-          {
-            "node": "SaveAnswer",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "SaveAnswer", "type": "main", "index": 0 }]]
     },
     "SaveAnswer": {
-      "main": [
-        [
-          {
-            "node": "CheckCompletion",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "CheckCompletion", "type": "main", "index": 0 }]]
     },
     "CheckCompletion": {
       "main": [
-        [
-          {
-            "node": "FetchTemplate",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "RespondNextQuestion",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "FetchTemplate", "type": "main", "index": 0 }],
+        [{ "node": "RespondNextQuestion", "type": "main", "index": 0 }]
       ]
     },
     "FetchTemplate": {
-      "main": [
-        [
-          {
-            "node": "FillTemplate",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "SetAppName", "type": "main", "index": 0 }]]
+    },
+    "SetAppName": {
+      "main": [[{ "node": "FillTemplate", "type": "main", "index": 0 }]]
     },
     "FillTemplate": {
-      "main": [
-        [
-          {
-            "node": "CreatePR",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "CreatePR", "type": "main", "index": 0 }]]
     },
     "CreatePR": {
-      "main": [
-        [
-          {
-            "node": "LogEvent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "SetCorrelationId", "type": "main", "index": 0 }]]
+    },
+    "SetCorrelationId": {
+      "main": [[{ "node": "LogEvent", "type": "main", "index": 0 }]]
     },
     "ErrorTrigger": {
-      "main": [
-        [
-          {
-            "node": "LogError",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "LogError", "type": "main", "index": 0 }]]
     }
   },
   "settings": {},
   "version": 1,
   "metadata": {
-    "version": "1.0.0",
-    "tags": ["semver:1.0.0","entra-id","onboarding","chat","demo"],
+    "version": "1.0.1",
+    "tags": ["semver:1.0.1","entra-id","onboarding","chat","fixed"],
     "author": "n8n Architect Pro",
-    "createdAt": "2025-09-15T00:00:00Z",
+    "createdAt": "2025-09-16T00:00:00Z",
     "changelog": [
-      "feat: regenerate workflow with conversation loop, Respond to Webhook, and proper connections"
+      "fix: corrected RespondNextQuestion expression syntax",
+      "feat: added SetAppName node to ensure app_name availability",
+      "feat: added SetCorrelationId node for structured logging compliance"
     ]
   },
   "id": "entra-id-onboarding"
