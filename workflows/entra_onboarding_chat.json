@@ -1,60 +1,862 @@
 {
-  "name": "Entra ID Onboarding Assistant (Chat Loop)",
+  "name": "My workflow 4",
   "nodes": [
-    { "parameters": { "path": "entra-onboarding-chat" }, "id": "WebhookTrigger", "name": "Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [200, 300] },
-
-    { "parameters": { "operation": "executeQuery", "query": "SELECT current_question, app_id, is_complete FROM entra_conversation_state WHERE user_id = {{$json[\"userId\"]}}" }, "id": "GetConversationState", "name": "Get Conversation State", "type": "n8n-nodes-base.postgres", "typeVersion": 2, "credentials": { "postgres": "CRED.postgres" }, "position": [400, 300] },
-
-    { "parameters": { "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/questionnaires/questionnaire-sso-initiation-entra.json", "responseFormat": "json", "options": { "retryOnFail": true, "maxRetries": 3, "timeout": 5000 } }, "id": "FetchQuestionnaire", "name": "Fetch Questionnaire JSON", "type": "n8n-nodes-base.httpRequest", "typeVersion": 3, "position": [600, 300] },
-
-    { "parameters": { "operation": "insert", "table": "entra_conversation_answers", "columns": ["user_id", "question_id", "answer"], "values": "={{[$json[\"userId\"], $json[\"questionId\"], $json[\"message\"]]}}" }, "id": "SaveAnswer", "name": "Save Answer", "type": "n8n-nodes-base.postgres", "typeVersion": 2, "credentials": { "postgres": "CRED.postgres" }, "position": [800, 300] },
-
-    { "parameters": { "conditions": { "boolean": [{ "value1": "={{$json.is_complete}}", "operation": "is true" }] } }, "id": "CheckCompletion", "name": "Check Questionnaire Complete", "type": "n8n-nodes-base.if", "typeVersion": 2, "position": [1000, 300] },
-
-    { "parameters": { "respondWith": "json", "responseBody": "={ {\"status\": \"in_progress\", \"next_question\": $json.next_question, \"options\": $json.options } }" }, "id": "RespondNextQuestion", "name": "Respond to Webhook (Next Question)", "type": "n8n-nodes-base.respondToWebhook", "typeVersion": 2, "position": [1200, 500] },
-
-    { "parameters": { "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/templates/entra_app_onboarding.yaml", "responseFormat": "string", "options": { "retryOnFail": true, "maxRetries": 3, "timeout": 5000 } }, "id": "FetchTemplate", "name": "Fetch YAML Template", "type": "n8n-nodes-base.httpRequest", "typeVersion": 3, "position": [1200, 200] },
-
-    { "parameters": { "functionCode": "const yaml = $json[\"body\"];\nlet filledYaml = yaml\n  .replace('{{app_id}}', $json.app_id)\n  .replace('{{app_name}}', $json.app_name);\nreturn [{ yaml: filledYaml, app_id: $json.app_id }];" }, "id": "FillTemplate", "name": "Fill Template", "type": "n8n-nodes-base.function", "typeVersion": 2, "position": [1400, 200] },
-
-    { "parameters": { "url": "https://api.github.com/repos/GoyaAcademy/Entra-ID-Onboarding-Automation/contents/templates/app-{{$json.app_id}}.yaml", "method": "PUT", "authentication": "predefinedCredentialType", "sendBody": true, "jsonBody": true, "bodyParametersJson": "={\n  \"message\": \"feat: add onboarding config for app-\" + $json.app_id,\n  \"content\": Buffer.from($json.yaml).toString(\"base64\"),\n  \"branch\": \"onboard-app-\" + $json.app_id\n}", "options": { "retryOnFail": true, "maxRetries": 3, "timeout": 10000 } }, "id": "CreatePR", "name": "Create GitHub PR", "type": "n8n-nodes-base.httpRequest", "typeVersion": 3, "credentials": { "githubApi": "CRED.github" }, "position": [1600, 200] },
-
-    { "parameters": { "operation": "insert", "table": "entra_workflow_logs", "columns": ["event", "workflow", "node", "status", "timestamp", "level"], "values": "={{['app_onboarding','entra-id-onboarding','Create GitHub PR','SUCCESS', $now, 'INFO']}}" }, "id": "LogEvent", "name": "Log Event", "type": "n8n-nodes-base.postgres", "typeVersion": 2, "credentials": { "postgres": "CRED.postgres" }, "position": [1800, 200] },
-
-    { "parameters": {}, "id": "ErrorTrigger", "name": "Error Trigger", "type": "n8n-nodes-base.errorTrigger", "typeVersion": 1, "position": [200, 600] },
-
-    { "parameters": { "operation": "insert", "table": "entra_workflow_logs", "columns": ["event", "workflow", "node", "status", "error", "timestamp", "level"], "values": "={{['app_onboarding','entra-id-onboarding','ErrorTrigger','FAILURE', $json.error.message, $now, 'ERROR']}}" }, "id": "LogError", "name": "Log Error", "type": "n8n-nodes-base.postgres", "typeVersion": 2, "credentials": { "postgres": "CRED.postgres" }, "position": [400, 600] }
-  ],
-
-  "connections": {
-    "Webhook": { "main": [[{ "node": "Get Conversation State", "type": "main", "index": 0 }]] },
-    "Get Conversation State": { "main": [[{ "node": "Fetch Questionnaire JSON", "type": "main", "index": 0 }]] },
-    "Fetch Questionnaire JSON": { "main": [[{ "node": "Save Answer", "type": "main", "index": 0 }]] },
-    "Save Answer": { "main": [[{ "node": "Check Questionnaire Complete", "type": "main", "index": 0 }]] },
-    "Check Questionnaire Complete": {
-      "main": [
-        [ { "node": "Fetch YAML Template", "type": "main", "index": 0 } ],
-        [ { "node": "Respond to Webhook (Next Question)", "type": "main", "index": 0 } ]
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "entra-onboarding-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "482fa9bf-b7b8-4c62-9af2-796cb94f31b4",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        128
+      ],
+      "webhookId": "c65f9a71-c979-4d9e-a2e4-04efab74a532"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  '{{$json.body.userId}}'::text                AS user_id,\n  COALESCE(cs.current_question, 'q1')        AS current_question,\n  cs.app_id                                   AS app_id,\n  COALESCE(cs.current_question = 'DONE', false) AS is_complete,\n  COALESCE(cs.last_updated, now())           AS last_updated\nFROM (SELECT 1) d\nLEFT JOIN conversation_state cs\n       ON cs.user_id = '{{$json.body.userId}}';\n",
+        "options": {}
+      },
+      "id": "5d947118-1a7e-40fb-b93f-544db858a0f1",
+      "name": "Get Conversation State",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        128
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/questionnaires/questionnaire-sso-initiation-entra.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 5000
+        }
+      },
+      "id": "9ce678f4-14ec-4e66-a89c-b23d66ae217b",
+      "name": "Fetch Questionnaire JSON",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -672,
+        32
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "bbdef27b-34e4-450c-8bc3-9bad839eb10f",
+              "leftValue": "={{ $json.is_complete }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "43237302-6b0b-4dce-9b0f-841caadaea39",
+      "name": "Check Questionnaire Complete",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        224,
+        128
       ]
     },
-    "Fetch YAML Template": { "main": [[{ "node": "Fill Template", "type": "main", "index": 0 }]] },
-    "Fill Template": { "main": [[{ "node": "Create GitHub PR", "type": "main", "index": 0 }]] },
-    "Create GitHub PR": { "main": [[{ "node": "Log Event", "type": "main", "index": 0 }]] },
-    "Error Trigger": { "main": [[{ "node": "Log Error", "type": "main", "index": 0 }]] }
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/templates/entra_app_onboarding.yaml",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "dc950768-3e7e-44b1-af29-9c901dca770c",
+      "name": "Fetch YAML Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        544,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "https://api.github.com/repos/GoyaAcademy/Entra-ID-Onboarding-Automation/contents/templates/app-{{$json.app_id}}.yaml",
+        "authentication": "predefinedCredentialType",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "11dd69e4-7a25-4f73-936d-59905d38badb",
+      "name": "Create GitHub PR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        992,
+        576
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": "entra_workflow_logs",
+        "options": {}
+      },
+      "id": "7fcc1e1e-390f-4106-8042-ec3fd4bd0ce5",
+      "name": "Log Event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        576
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "d1ff4bc7-5b55-4c02-b37f-cbb026c701ec",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": "entra_workflow_logs",
+        "options": {}
+      },
+      "id": "6521169a-78c6-4225-9948-20cab3f953da",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        864
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const yaml = $json[\"body\"];\n\nlet filledYaml = yaml\n  .replace(\"{{app_id}}\", $json.app_id)\n  .replace(\"{{app_name}}\", $json.app_name);\n\nreturn [\n  {\n    yaml: filledYaml,\n    app_id: $json.app_id\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        576
+      ],
+      "id": "94d777f4-e323-41e6-a5d2-c99fda4b5def",
+      "name": "Fill Template (Code node)"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "user_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -672,
+        320
+      ],
+      "id": "dab22449-947a-4cf9-abdd-79325221c244",
+      "name": "Merge Input + State"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3c60733c-7ae1-47e4-a78e-2523857b1164",
+              "name": "=user_id",
+              "value": "={{$json.body.userId}}",
+              "type": "string"
+            },
+            {
+              "id": "9d000ede-f56d-4e47-8fbc-32cceec50904",
+              "name": "answer",
+              "value": "={{$json.body.answer || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "62e8aeb7-e9d7-42fb-9acd-703ab36400ba",
+              "name": "app_id",
+              "value": "={{$json.body.app_id || null}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        416
+      ],
+      "id": "0f2ae96d-737f-4576-9d41-a00b9916d8e4",
+      "name": "Edit Fields (Normalize Webhook)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d030ddc-f86d-4483-8e6e-becba4dcd9a0",
+              "name": "user_id",
+              "value": "={{$json.user_id}}",
+              "type": "string"
+            },
+            {
+              "id": "3d53e97d-e523-4c82-8585-4d0f37cc62cb",
+              "name": "current_question",
+              "value": "={{$json.current_question}}",
+              "type": "string"
+            },
+            {
+              "id": "6c9a47e6-14d4-4fb8-935e-e1dbebc89655",
+              "name": "app_id",
+              "value": "={{$json.app_id || null}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        224
+      ],
+      "id": "c5e134e1-0e24-41f4-8bf3-a14e4986b417",
+      "name": "Edit Fields (Normalize State)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversation_answers (user_id, question_id, answer)\nVALUES ('{{$json.user_id}}','{{$json.current_question}}','{{$json.answer}}')\nON CONFLICT (user_id, question_id)\nDO UPDATE SET\n  answer   = EXCLUDED.answer,\n  timestamp = now();\n",
+        "options": {}
+      },
+      "id": "5030ea44-5d79-4fad-b325-6c389e7bc9b1",
+      "name": "Save Answer (Postgres)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        416
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT user_id, question_id, answer, timestamp\nFROM conversation_answers\nWHERE user_id = '{{ $('Webhook').item.json.body.userId }}'\n  AND question_id = '{{ $('Get Conversation State').item.json.current_question }}';\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -224,
+        416
+      ],
+      "id": "9f336543-8665-4128-a5a4-2ccb36c7a4a1",
+      "name": "Verify Answer",
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const arr = $input.all().map(i => i.json);\nreturn [{ json: { questions: arr, join_key: 1 } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        32
+      ],
+      "id": "5cffc629-0ae9-4297-8dd2-2bf1416e9f2b",
+      "name": "Questions → Array"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "908b5153-5e0b-4374-8067-75b8a9dfb358",
+              "name": "join_key",
+              "value": "=1",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        224
+      ],
+      "id": "d0a9097a-54e9-426b-a78d-63896f01194d",
+      "name": "Add Join Key — Payload"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "join_key",
+              "field2": "join_key"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -224,
+        128
+      ],
+      "id": "892325f5-94be-4f0e-9ded-bde1c6005dd8",
+      "name": "Merge Payload + Questions"
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $json; // merged payload + questions array\n\nconst qs = Array.isArray(p.questions) ? p.questions : [];\nconst byId = {};\nfor (const q of qs) byId[q.id] = q;\n\n// Resolve current question ID; map legacy 'q1' to actual first id\nlet currentId = p.current_question;\nif (!byId[currentId]) {\n  if (currentId === 'q1' && byId['q1_login_flow']) currentId = 'q1_login_flow';\n  else currentId = qs[0]?.id ?? null; // fallback to first question\n}\n\n// Simple nav: take the first entry in `next`\nlet nextId = null;\nif (currentId && byId[currentId]) {\n  const cur = byId[currentId];\n  if (Array.isArray(cur.next) && cur.next.length > 0) nextId = cur.next[0];\n}\n\nconst nextQ = nextId ? byId[nextId] : null;\n\nreturn [\n  {\n    json: {\n      user_id: p.user_id,\n      app_id: p.app_id ?? null,\n      previous_question: currentId,\n      previous_answer: p.answer ?? null,\n      next_question_id: nextId,\n      next_question_text: nextQ?.text ?? null,\n      options: nextQ?.options ?? [],\n      is_complete: !nextId\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        128
+      ],
+      "id": "982788cf-8ddd-456b-952a-965fe853e89e",
+      "name": "Compute Next Question"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"echo\": \"={{$json}}\" }\n",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1120,
+        -64
+      ],
+      "id": "4c7c66e2-8d9b-4500-9875-3e1dbb9b2233",
+      "name": "temporary Respond",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "=={{ {\n  \"status\": \"in_progress\",\n  \"questionId\": $(\"Compute Next Question\").item.json.next_question_id,\n  \"question\": $(\"Compute Next Question\").item.json.next_question_text,\n  \"options\": $(\"Compute Next Question\").item.json.options\n} }}\n",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        896,
+        224
+      ],
+      "id": "21e43f34-f98a-41c0-865f-a40994576c1d",
+      "name": "Respond (Next Question)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT user_id, current_question, last_updated\nFROM conversation_state\nWHERE user_id = '{{$json.user_id}}';\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        912,
+        416
+      ],
+      "id": "3e4fb429-2b05-409c-826b-748e9237dd43",
+      "name": "Verify State Row",
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "efcd19e1-a4de-4b2f-9590-14bf2617c1e9",
+              "name": "next_current",
+              "value": "={{ $json.is_complete ? 'DONE' : $json.next_question_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        224
+      ],
+      "id": "d03e2526-1d45-48d8-a14a-7515616e0acb",
+      "name": "Compute State Update (false)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "efcd19e1-a4de-4b2f-9590-14bf2617c1e9",
+              "name": "next_current",
+              "value": "={{ $json.is_complete ? 'DONE' : $json.next_question_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        -64
+      ],
+      "id": "4c6d2329-5154-4c0a-a3b9-ef2e7c290e5b",
+      "name": "Compute State Update (true)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversation_state (user_id, current_question, last_updated)\nVALUES ('{{$json.user_id}}','{{$json.next_current}}', now())\nON CONFLICT (user_id) DO UPDATE\nSET current_question = EXCLUDED.current_question,\n    last_updated     = now();\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        224
+      ],
+      "id": "be4ff1f7-6483-4b31-9a82-0f637c7eb4a9",
+      "name": "Update Conversation State (false)",
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"completed\", \"message\": \"Questionnaire finished.\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        896,
+        -64
+      ],
+      "id": "39ea085b-8ae9-48d5-b11f-e11865c2a09e",
+      "name": "Respond: Completed (temp)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversation_state (user_id, current_question, last_updated)\nVALUES ('{{$json.user_id}}','{{$json.next_current}}', now())\nON CONFLICT (user_id) DO UPDATE\nSET current_question = EXCLUDED.current_question,\n    last_updated     = now();\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        -64
+      ],
+      "id": "f94cebe3-a15c-479f-9891-d5ed5c78518c",
+      "name": "Update Conversation State (true)",
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "temporary Respond",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Conversation State",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields (Normalize Webhook)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation State": {
+      "main": [
+        [
+          {
+            "node": "Fetch Questionnaire JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields (Normalize State)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Questionnaire JSON": {
+      "main": [
+        [
+          {
+            "node": "Questions → Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Questionnaire Complete": {
+      "main": [
+        [
+          {
+            "node": "Compute State Update (true)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Compute State Update (false)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create GitHub PR": {
+      "main": [
+        [
+          {
+            "node": "Log Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch YAML Template": {
+      "main": [
+        [
+          {
+            "node": "Fill Template (Code node)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fill Template (Code node)": {
+      "main": [
+        [
+          {
+            "node": "Create GitHub PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields (Normalize Webhook)": {
+      "main": [
+        [
+          {
+            "node": "Merge Input + State",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields (Normalize State)": {
+      "main": [
+        [
+          {
+            "node": "Merge Input + State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Input + State": {
+      "main": [
+        [
+          {
+            "node": "Save Answer (Postgres)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add Join Key — Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Answer (Postgres)": {
+      "main": [
+        [
+          {
+            "node": "Verify Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Answer": {
+      "main": [
+        []
+      ]
+    },
+    "Add Join Key — Payload": {
+      "main": [
+        [
+          {
+            "node": "Merge Payload + Questions",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Questions → Array": {
+      "main": [
+        [
+          {
+            "node": "Merge Payload + Questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Payload + Questions": {
+      "main": [
+        [
+          {
+            "node": "Compute Next Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Next Question": {
+      "main": [
+        [
+          {
+            "node": "Check Questionnaire Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute State Update (false)": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation State (false)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation State (false)": {
+      "main": [
+        [
+          {
+            "node": "Verify State Row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond (Next Question)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute State Update (true)": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation State (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation State (true)": {
+      "main": [
+        [
+          {
+            "node": "Respond: Completed (temp)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-
-  "settings": {},
-  "version": 2,
-  "metadata": {
-    "version": "1.1.1",
-    "tags": ["semver:1.1.1", "entra-id", "onboarding", "chat", "schema:v2", "n8n-1.111.0"],
-    "author": "n8n Architect Pro",
-    "createdAt": "2025-09-16T00:00:00Z",
-    "changelog": [
-      "fix: regenerate workflow with schema v2 and node versions compatible with n8n 1.111.0",
-      "fix: ensure false branch wiring displays correctly in UI"
-    ]
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
   },
-
-  "id": "entra-id-onboarding"
+  "versionId": "2885d545-d360-4ff8-ac76-078269a15f2f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
+  },
+  "id": "VLnuUGCBrpYU06Mn",
+  "tags": []
 }
