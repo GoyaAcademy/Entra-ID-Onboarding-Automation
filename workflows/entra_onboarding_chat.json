@@ -27,26 +27,32 @@
   ],
 
   "connections": {
-    "Webhook": { "main": [[{ "node": "GetConversationState", "type": "main", "index": 0 }]] },
-    "GetConversationState": { "main": [[{ "node": "FetchQuestionnaire", "type": "main", "index": 0 }]] },
-    "FetchQuestionnaire": { "main": [[{ "node": "SaveAnswer", "type": "main", "index": 0 }]] },
-    "SaveAnswer": { "main": [[{ "node": "CheckCompletion", "type": "main", "index": 0 }]] },
-    "CheckCompletion": { "main": [[{ "node": "FetchTemplate", "type": "main", "index": 0 }],[{ "node": "RespondNextQuestion", "type": "main", "index": 0 }]] },
-    "FetchTemplate": { "main": [[{ "node": "FillTemplate", "type": "main", "index": 0 }]] },
-    "FillTemplate": { "main": [[{ "node": "CreatePR", "type": "main", "index": 0 }]] },
-    "CreatePR": { "main": [[{ "node": "LogEvent", "type": "main", "index": 0 }]] },
-    "ErrorTrigger": { "main": [[{ "node": "LogError", "type": "main", "index": 0 }]] }
+    "Webhook": { "main": [[{ "node": "Get Conversation State", "type": "main", "index": 0 }]] },
+    "Get Conversation State": { "main": [[{ "node": "Fetch Questionnaire JSON", "type": "main", "index": 0 }]] },
+    "Fetch Questionnaire JSON": { "main": [[{ "node": "Save Answer", "type": "main", "index": 0 }]] },
+    "Save Answer": { "main": [[{ "node": "Check Questionnaire Complete", "type": "main", "index": 0 }]] },
+    "Check Questionnaire Complete": {
+      "main": [
+        [ { "node": "Fetch YAML Template", "type": "main", "index": 0 } ],
+        [ { "node": "Respond to Webhook (Next Question)", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Fetch YAML Template": { "main": [[{ "node": "Fill Template", "type": "main", "index": 0 }]] },
+    "Fill Template": { "main": [[{ "node": "Create GitHub PR", "type": "main", "index": 0 }]] },
+    "Create GitHub PR": { "main": [[{ "node": "Log Event", "type": "main", "index": 0 }]] },
+    "Error Trigger": { "main": [[{ "node": "Log Error", "type": "main", "index": 0 }]] }
   },
 
   "settings": {},
-  "version": 1,
+  "version": 2,
   "metadata": {
-    "version": "1.0.7",
-    "tags": ["semver:1.0.7", "entra-id", "onboarding", "chat", "demo", "latest-nodes"],
+    "version": "1.1.1",
+    "tags": ["semver:1.1.1", "entra-id", "onboarding", "chat", "schema:v2", "n8n-1.111.0"],
     "author": "n8n Architect Pro",
     "createdAt": "2025-09-16T00:00:00Z",
     "changelog": [
-      "fix: regenerate workflow with fully connected graph and latest node versions"
+      "fix: regenerate workflow with schema v2 and node versions compatible with n8n 1.111.0",
+      "fix: ensure false branch wiring displays correctly in UI"
     ]
   },
 
