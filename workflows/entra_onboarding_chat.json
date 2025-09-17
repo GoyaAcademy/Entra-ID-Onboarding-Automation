@@ -1,5 +1,5 @@
 {
-  "name": "My workflow 4",
+  "name": "entra_onboarding_chat",
   "nodes": [
     {
       "parameters": {
@@ -444,7 +444,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "=={{ {\n  \"status\": \"in_progress\",\n  \"questionId\": $(\"Compute Next Question\").item.json.next_question_id,\n  \"question\": $(\"Compute Next Question\").item.json.next_question_text,\n  \"options\": $(\"Compute Next Question\").item.json.options\n} }}\n",
+        "responseBody": "={{ JSON.stringify($json) }}",
         "options": {
           "responseCode": 200
         }
@@ -452,7 +452,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        896,
+        1136,
         224
       ],
       "id": "21e43f34-f98a-41c0-865f-a40994576c1d",
@@ -560,7 +560,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        896,
+        1120,
         -64
       ],
       "id": "39ea085b-8ae9-48d5-b11f-e11865c2a09e",
@@ -586,6 +586,47 @@
           "name": "CRED.postgres"
         }
       }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "504b5472-e727-4f40-b407-87549e565f73",
+              "name": "status",
+              "value": "in_progress",
+              "type": "string"
+            },
+            {
+              "id": "141af086-279e-4217-884f-fba3ad8ec5ad",
+              "name": "questionId",
+              "value": "={{ $(\"Compute Next Question\").item.json.next_question_id }}",
+              "type": "string"
+            },
+            {
+              "id": "0623d274-8625-4748-a608-26c84d1bd4b4",
+              "name": "question",
+              "value": "={{ $(\"Compute Next Question\").item.json.next_question_text }}",
+              "type": "string"
+            },
+            {
+              "id": "febfb76c-1c01-4afa-ba3e-20844a30600b",
+              "name": "options",
+              "value": "={{ $(\"Compute Next Question\").item.json.options }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        224
+      ],
+      "id": "9181cd29-8670-4414-bcef-65048ebb4794",
+      "name": "Build Response (false)"
     }
   ],
   "pinData": {},
@@ -818,7 +859,7 @@
             "index": 0
           },
           {
-            "node": "Respond (Next Question)",
+            "node": "Build Response (false)",
             "type": "main",
             "index": 0
           }
@@ -846,13 +887,24 @@
           }
         ]
       ]
+    },
+    "Build Response (false)": {
+      "main": [
+        [
+          {
+            "node": "Respond (Next Question)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "2885d545-d360-4ff8-ac76-078269a15f2f",
+  "versionId": "8da7aa4b-430b-4336-9074-6a15b01fe842",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
