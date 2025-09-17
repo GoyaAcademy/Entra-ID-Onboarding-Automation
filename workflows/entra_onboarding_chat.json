@@ -104,8 +104,13 @@
     },
     {
       "parameters": {
-        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/templates/entra_app_onboarding.yaml",
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/refs/heads/main/templates/entra_app_onboarding.yaml",
         "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
           "timeout": 5000
         }
       },
@@ -114,8 +119,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        544,
-        576
+        896,
+        -64
       ]
     },
     {
@@ -138,8 +143,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        992,
-        576
+        1344,
+        -64
       ],
       "credentials": {
         "githubApi": {
@@ -163,8 +168,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2,
       "position": [
-        1216,
-        576
+        1568,
+        -64
       ],
       "credentials": {
         "postgres": {
@@ -216,8 +221,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        768,
-        576
+        1120,
+        -64
       ],
       "id": "94d777f4-e323-41e6-a5d2-c99fda4b5def",
       "name": "Fill Template (Code node)"
@@ -452,8 +457,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        1136,
-        224
+        1120,
+        304
       ],
       "id": "21e43f34-f98a-41c0-865f-a40994576c1d",
       "name": "Respond (Next Question)"
@@ -467,8 +472,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        912,
-        416
+        896,
+        496
       ],
       "id": "3e4fb429-2b05-409c-826b-748e9237dd43",
       "name": "Verify State Row",
@@ -498,8 +503,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        448,
-        224
+        432,
+        304
       ],
       "id": "d03e2526-1d45-48d8-a14a-7515616e0acb",
       "name": "Compute State Update (false)"
@@ -537,8 +542,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        672,
-        224
+        656,
+        304
       ],
       "id": "be4ff1f7-6483-4b31-9a82-0f637c7eb4a9",
       "name": "Update Conversation State (false)",
@@ -560,8 +565,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        1120,
-        -64
+        880,
+        144
       ],
       "id": "39ea085b-8ae9-48d5-b11f-e11865c2a09e",
       "name": "Respond: Completed (temp)"
@@ -613,7 +618,7 @@
               "id": "febfb76c-1c01-4afa-ba3e-20844a30600b",
               "name": "options",
               "value": "={{ $(\"Compute Next Question\").item.json.options }}",
-              "type": "string"
+              "type": "array"
             }
           ]
         },
@@ -622,8 +627,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        880,
-        224
+        864,
+        304
       ],
       "id": "9181cd29-8670-4414-bcef-65048ebb4794",
       "name": "Build Response (false)"
@@ -884,6 +889,11 @@
             "node": "Respond: Completed (temp)",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Fetch YAML Template",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -904,7 +914,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8da7aa4b-430b-4336-9074-6a15b01fe842",
+  "versionId": "52c89bb4-00a9-4902-aeed-3cfea62b16d9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
