@@ -120,7 +120,7 @@
       "typeVersion": 3,
       "position": [
         896,
-        -64
+        -144
       ]
     },
     {
@@ -143,8 +143,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        1344,
-        -64
+        1856,
+        -48
       ],
       "credentials": {
         "githubApi": {
@@ -168,8 +168,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2,
       "position": [
-        1568,
-        -64
+        2080,
+        -48
       ],
       "credentials": {
         "postgres": {
@@ -221,8 +221,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1120,
-        -64
+        1632,
+        -48
       ],
       "id": "94d777f4-e323-41e6-a5d2-c99fda4b5def",
       "name": "Fill Template (Code node)"
@@ -422,7 +422,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
+        -48,
         128
       ],
       "id": "982788cf-8ddd-456b-952a-965fe853e89e",
@@ -565,8 +565,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        880,
-        144
+        864,
+        -336
       ],
       "id": "39ea085b-8ae9-48d5-b11f-e11865c2a09e",
       "name": "Respond: Completed (temp)"
@@ -632,6 +632,103 @@
       ],
       "id": "9181cd29-8670-4414-bcef-65048ebb4794",
       "name": "Build Response (false)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98f3b9f3-8d8b-4731-9f3a-24ae2eff4d78",
+              "name": "is_complete",
+              "value": "=true",
+              "type": "boolean"
+            },
+            {
+              "id": "24993af5-d065-4563-9e1a-bf822ec7e2f3",
+              "name": "next_question_id",
+              "value": "=null",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        -32
+      ],
+      "id": "a6cb4ced-be24-4ca3-9447-61ef936b2f95",
+      "name": "Force Complete (TEST)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dd6921d7-dd20-4c80-98ef-ec54c9b93114",
+              "name": "template_text",
+              "value": "={{ $json.data || $json.body || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "88586aa0-a043-42b1-90db-e8b5819ae310",
+              "name": "join_key",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1104,
+        -144
+      ],
+      "id": "a2f93ad8-88ed-408d-9511-da3f83b9d581",
+      "name": "Extract Template Text (true)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "738800da-d22d-4f5c-b0e2-46682a940334",
+              "name": "join_key",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1104,
+        64
+      ],
+      "id": "75a3edd6-9678-41f1-baff-3ecb98cd6f91",
+      "name": "Add Join Key (payload-true)"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "join_key",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1392,
+        -48
+      ],
+      "id": "07278c10-acd5-4532-ae9e-41b204ac18dd",
+      "name": "Merge Template + Payload (true)"
     }
   ],
   "pinData": {},
@@ -728,7 +825,7 @@
       "main": [
         [
           {
-            "node": "Fill Template (Code node)",
+            "node": "Extract Template Text (true)",
             "type": "main",
             "index": 0
           }
@@ -840,6 +937,11 @@
             "node": "Check Questionnaire Complete",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Force Complete (TEST)",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -894,6 +996,11 @@
             "node": "Fetch YAML Template",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Add Join Key (payload-true)",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -908,13 +1015,57 @@
           }
         ]
       ]
+    },
+    "Force Complete (TEST)": {
+      "main": [
+        [
+          {
+            "node": "Check Questionnaire Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Template Text (true)": {
+      "main": [
+        [
+          {
+            "node": "Merge Template + Payload (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Join Key (payload-true)": {
+      "main": [
+        [
+          {
+            "node": "Merge Template + Payload (true)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Template + Payload (true)": {
+      "main": [
+        [
+          {
+            "node": "Fill Template (Code node)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "52c89bb4-00a9-4902-aeed-3cfea62b16d9",
+  "versionId": "7b9b2207-9b17-4d49-a7dc-248bfd1ef422",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
