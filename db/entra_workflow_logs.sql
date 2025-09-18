@@ -10,6 +10,6 @@ CREATE TABLE IF NOT EXISTS public.entra_workflow_logs (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_workflow_logs_created_at     ON public.workflow_logs (created_at);
-CREATE INDEX IF NOT EXISTS idx_workflow_logs_workflow       ON public.workflow_logs (workflow);
-CREATE INDEX IF NOT EXISTS idx_workflow_logs_correlationid  ON public.workflow_logs (correlationid);
+CREATE INDEX IF NOT EXISTS idx_entra_workflow_logs_created_at     ON public.entra_workflow_logs (created_at);
+CREATE INDEX IF NOT EXISTS idx_entra_workflow_logs_workflow       ON public.entra_workflow_logs(workflow);
+CREATE INDEX IF NOT EXISTS idx_entra_workflow_logscorrelationid  ON public.entra_workflow_logs (correlationid);
