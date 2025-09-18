@@ -1,0 +1,1948 @@
+{
+  "name": "entra_onboarding_chat_manual",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "entra-onboarding-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "482fa9bf-b7b8-4c62-9af2-796cb94f31b4",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2176,
+        160
+      ],
+      "webhookId": "c65f9a71-c979-4d9e-a2e4-04efab74a532"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  '{{$json.body.userId}}'::text                AS user_id,\n  COALESCE(cs.current_question, 'q1')        AS current_question,\n  cs.app_id                                   AS app_id,\n  COALESCE(cs.current_question = 'DONE', false) AS is_complete,\n  COALESCE(cs.last_updated, now())           AS last_updated\nFROM (SELECT 1) d\nLEFT JOIN conversation_state cs\n       ON cs.user_id = '{{$json.body.userId}}';\n",
+        "options": {}
+      },
+      "id": "5d947118-1a7e-40fb-b93f-544db858a0f1",
+      "name": "Get Conversation State",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        128
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/questionnaires/questionnaire-sso-initiation-entra.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 5000
+        }
+      },
+      "id": "9ce678f4-14ec-4e66-a89c-b23d66ae217b",
+      "name": "Fetch Questionnaire JSON",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -672,
+        32
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "bbdef27b-34e4-450c-8bc3-9bad839eb10f",
+              "leftValue": "={{ $json.is_complete }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "43237302-6b0b-4dce-9b0f-841caadaea39",
+      "name": "Check Questionnaire Complete",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        224,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/refs/heads/main/templates/entra_app_onboarding.yaml",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 5000
+        }
+      },
+      "id": "dc950768-3e7e-44b1-af29-9c901dca770c",
+      "name": "Fetch YAML Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        896,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "user_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -672,
+        320
+      ],
+      "id": "dab22449-947a-4cf9-abdd-79325221c244",
+      "name": "Merge Input + State"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3c60733c-7ae1-47e4-a78e-2523857b1164",
+              "name": "=user_id",
+              "value": "={{$json.body.userId}}",
+              "type": "string"
+            },
+            {
+              "id": "9d000ede-f56d-4e47-8fbc-32cceec50904",
+              "name": "answer",
+              "value": "={{$json.body.answer || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "62e8aeb7-e9d7-42fb-9acd-703ab36400ba",
+              "name": "app_id",
+              "value": "={{$json.body.app_id || null}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        416
+      ],
+      "id": "0f2ae96d-737f-4576-9d41-a00b9916d8e4",
+      "name": "Edit Fields (Normalize Webhook)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d030ddc-f86d-4483-8e6e-becba4dcd9a0",
+              "name": "user_id",
+              "value": "={{$json.user_id}}",
+              "type": "string"
+            },
+            {
+              "id": "3d53e97d-e523-4c82-8585-4d0f37cc62cb",
+              "name": "current_question",
+              "value": "={{$json.current_question}}",
+              "type": "string"
+            },
+            {
+              "id": "6c9a47e6-14d4-4fb8-935e-e1dbebc89655",
+              "name": "app_id",
+              "value": "={{$json.app_id || null}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        224
+      ],
+      "id": "c5e134e1-0e24-41f4-8bf3-a14e4986b417",
+      "name": "Edit Fields (Normalize State)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversation_answers (user_id, question_id, answer)\nVALUES ('{{$json.user_id}}','{{$json.current_question}}','{{$json.answer}}')\nON CONFLICT (user_id, question_id)\nDO UPDATE SET\n  answer   = EXCLUDED.answer,\n  timestamp = now();\n",
+        "options": {}
+      },
+      "id": "5030ea44-5d79-4fad-b325-6c389e7bc9b1",
+      "name": "Save Answer (Postgres)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        416
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT user_id, question_id, answer, timestamp\nFROM conversation_answers\nWHERE user_id = '{{ $('Webhook').item.json.body.userId }}'\n  AND question_id = '{{ $('Get Conversation State').item.json.current_question }}';\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -224,
+        416
+      ],
+      "id": "9f336543-8665-4128-a5a4-2ccb36c7a4a1",
+      "name": "Verify Answer",
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const arr = $input.all().map(i => i.json);\nreturn [{ json: { questions: arr, join_key: 1 } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        32
+      ],
+      "id": "5cffc629-0ae9-4297-8dd2-2bf1416e9f2b",
+      "name": "Questions → Array"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "908b5153-5e0b-4374-8067-75b8a9dfb358",
+              "name": "join_key",
+              "value": "=1",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        224
+      ],
+      "id": "d0a9097a-54e9-426b-a78d-63896f01194d",
+      "name": "Add Join Key — Payload"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "join_key",
+              "field2": "join_key"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -224,
+        128
+      ],
+      "id": "892325f5-94be-4f0e-9ded-bde1c6005dd8",
+      "name": "Merge Payload + Questions"
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $json; // merged payload + questions array\n\nconst qs = Array.isArray(p.questions) ? p.questions : [];\nconst byId = {};\nfor (const q of qs) byId[q.id] = q;\n\n// Resolve current question ID; map legacy 'q1' to actual first id\nlet currentId = p.current_question;\nif (!byId[currentId]) {\n  if (currentId === 'q1' && byId['q1_login_flow']) currentId = 'q1_login_flow';\n  else currentId = qs[0]?.id ?? null; // fallback to first question\n}\n\n// Simple nav: take the first entry in `next`\nlet nextId = null;\nif (currentId && byId[currentId]) {\n  const cur = byId[currentId];\n  if (Array.isArray(cur.next) && cur.next.length > 0) nextId = cur.next[0];\n}\n\nconst nextQ = nextId ? byId[nextId] : null;\n\nreturn [\n  {\n    json: {\n      user_id: p.user_id,\n      app_id: p.app_id ?? null,\n      previous_question: currentId,\n      previous_answer: p.answer ?? null,\n      next_question_id: nextId,\n      next_question_text: nextQ?.text ?? null,\n      options: nextQ?.options ?? [],\n      is_complete: !nextId\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        128
+      ],
+      "id": "982788cf-8ddd-456b-952a-965fe853e89e",
+      "name": "Compute Next Question"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"echo\": \"={{$json}}\" }\n",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1888,
+        416
+      ],
+      "id": "4c7c66e2-8d9b-4500-9875-3e1dbb9b2233",
+      "name": "temporary Respond",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1696,
+        304
+      ],
+      "id": "21e43f34-f98a-41c0-865f-a40994576c1d",
+      "name": "Respond (Next Question)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT user_id, current_question, last_updated\nFROM conversation_state\nWHERE user_id = '{{$json.user_id}}';\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        896,
+        496
+      ],
+      "id": "3e4fb429-2b05-409c-826b-748e9237dd43",
+      "name": "Verify State Row",
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "efcd19e1-a4de-4b2f-9590-14bf2617c1e9",
+              "name": "next_current",
+              "value": "={{ $json.is_complete ? 'DONE' : $json.next_question_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        304
+      ],
+      "id": "d03e2526-1d45-48d8-a14a-7515616e0acb",
+      "name": "Compute State Update (false)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "efcd19e1-a4de-4b2f-9590-14bf2617c1e9",
+              "name": "next_current",
+              "value": "={{ $json.is_complete ? 'DONE' : $json.next_question_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        -64
+      ],
+      "id": "4c6d2329-5154-4c0a-a3b9-ef2e7c290e5b",
+      "name": "Compute State Update (true)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversation_state (user_id, current_question, last_updated)\nVALUES ('{{$json.user_id}}','{{$json.next_current}}', now())\nON CONFLICT (user_id) DO UPDATE\nSET current_question = EXCLUDED.current_question,\n    last_updated     = now();\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        656,
+        304
+      ],
+      "id": "be4ff1f7-6483-4b31-9a82-0f637c7eb4a9",
+      "name": "Update Conversation State (false)",
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"completed\", \"message\": \"Questionnaire finished.\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        864,
+        -336
+      ],
+      "id": "39ea085b-8ae9-48d5-b11f-e11865c2a09e",
+      "name": "Respond: Completed (temp)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversation_state (user_id, current_question, last_updated)\nVALUES ('{{$json.user_id}}','{{$json.next_current}}', now())\nON CONFLICT (user_id) DO UPDATE\nSET current_question = EXCLUDED.current_question,\n    last_updated     = now();\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        -64
+      ],
+      "id": "f94cebe3-a15c-479f-9891-d5ed5c78518c",
+      "name": "Update Conversation State (true)",
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "504b5472-e727-4f40-b407-87549e565f73",
+              "name": "status",
+              "value": "in_progress",
+              "type": "string"
+            },
+            {
+              "id": "141af086-279e-4217-884f-fba3ad8ec5ad",
+              "name": "questionId",
+              "value": "={{ $('Compute Next Question').item.json.next_question_id }}",
+              "type": "string"
+            },
+            {
+              "id": "0623d274-8625-4748-a608-26c84d1bd4b4",
+              "name": "question",
+              "value": "={{ $(\"Compute Next Question\").item.json.next_question_text }}",
+              "type": "string"
+            },
+            {
+              "id": "febfb76c-1c01-4afa-ba3e-20844a30600b",
+              "name": "options",
+              "value": "={{ $(\"Compute Next Question\").item.json.options }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1456,
+        304
+      ],
+      "id": "9181cd29-8670-4414-bcef-65048ebb4794",
+      "name": "Build Response (false)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98f3b9f3-8d8b-4731-9f3a-24ae2eff4d78",
+              "name": "is_complete",
+              "value": "=true",
+              "type": "boolean"
+            },
+            {
+              "id": "24993af5-d065-4563-9e1a-bf822ec7e2f3",
+              "name": "next_question_id",
+              "value": "=null",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        -32
+      ],
+      "id": "a6cb4ced-be24-4ca3-9447-61ef936b2f95",
+      "name": "Force Complete (TEST)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dd6921d7-dd20-4c80-98ef-ec54c9b93114",
+              "name": "template_text",
+              "value": "={{ $json.data || $json.body || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "88586aa0-a043-42b1-90db-e8b5819ae310",
+              "name": "join_key",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1104,
+        -144
+      ],
+      "id": "a2f93ad8-88ed-408d-9511-da3f83b9d581",
+      "name": "Extract Template Text (true)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "738800da-d22d-4f5c-b0e2-46682a940334",
+              "name": "join_key",
+              "value": 1,
+              "type": "number"
+            },
+            {
+              "id": "77caeb45-a019-4b1c-9fbf-7aa7d172552d",
+              "name": "user_id",
+              "value": "={{ $(\"Compute Next Question\").item.json.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "99c14f85-116c-4060-b295-601ace224432",
+              "name": "app_id",
+              "value": "={{ $(\"Compute Next Question\").item.json.app_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1104,
+        64
+      ],
+      "id": "75a3edd6-9678-41f1-baff-3ecb98cd6f91",
+      "name": "Add Join Key (payload-true)"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "join_key",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1392,
+        -48
+      ],
+      "id": "07278c10-acd5-4532-ae9e-41b204ac18dd",
+      "name": "Merge Template + Payload (true)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "abdb90d8-3780-49fe-bbc3-e66c2a68927f",
+              "name": "owner",
+              "value": "GoyaAcademy",
+              "type": "string"
+            },
+            {
+              "id": "3bcad72e-5a5b-421a-af28-1cb6d589559a",
+              "name": "repo",
+              "value": "Entra-ID-Onboarding-Automation",
+              "type": "string"
+            },
+            {
+              "id": "0e30ee0d-db80-4d14-bcf4-fa0dd9645f49",
+              "name": "base",
+              "value": "main",
+              "type": "string"
+            },
+            {
+              "id": "7146d0e1-f2b4-4f90-ae8d-c94b4b7946c5",
+              "name": "join_key",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1840,
+        -48
+      ],
+      "id": "51fda723-e2c0-44e1-97eb-c9ed01fc2ea2",
+      "name": "Repo Config (true)"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}/git/ref/heads/{{$json.base}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2064,
+        -160
+      ],
+      "id": "5352ebad-7ae9-4608-9ca8-d7284549ac0d",
+      "name": "Get Base Ref",
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2f82939-a8f7-4ea7-a2b4-985ada02e3dd",
+              "name": "base_sha",
+              "value": "={{ $json.object.sha }}",
+              "type": "string"
+            },
+            {
+              "id": "71555933-22a9-42cf-913e-8ec508258c78",
+              "name": "join_key",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2240,
+        -160
+      ],
+      "id": "b1f909a8-1745-4dc4-b2d0-7d41b91d0057",
+      "name": "Extract Base SHA"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "join_key",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2464,
+        -64
+      ],
+      "id": "2b917c74-ead2-4f93-9ad4-d4b7c201ca9c",
+      "name": "Merge PR Context (A)"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/user",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2672,
+        -240
+      ],
+      "id": "ed0be7d9-fa68-48c3-aab7-c6e34130c0c9",
+      "name": "WhoAmI (temporarily)",
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "ref",
+              "value": "={{ $json.ref }}"
+            },
+            {
+              "name": "sha",
+              "value": "={{ $json.sha }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "11dd69e4-7a25-4f73-936d-59905d38badb",
+      "name": "Create Branch (true)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        2880,
+        48
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2048,
+        176
+      ],
+      "id": "6d38c2b9-476e-4969-9c9d-de667fe35259",
+      "name": "Get Base Ref1",
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5b6de1e8-0b0e-497c-9757-c00f19e9093d",
+              "name": "url",
+              "value": "={{ 'https://api.github.com/repos/' + $json.owner + '/' + $json.repo + '/git/refs' }}",
+              "type": "string"
+            },
+            {
+              "id": "aad27173-9378-46eb-8b0b-9fe11f1e8512",
+              "name": "ref",
+              "value": "={{ 'refs/heads/' + $json.branch }}",
+              "type": "string"
+            },
+            {
+              "id": "2be84a39-49a0-4aea-88ea-1305d0156857",
+              "name": "sha",
+              "value": "={{ $json.base_sha }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2672,
+        -64
+      ],
+      "id": "0595640d-0f9e-4833-8970-26a12a7d751b",
+      "name": "Build Branch Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f23f311-9f6a-46f5-a1b1-7eb234b5ec33",
+              "name": "owner",
+              "value": "={{ $(\"Repo Config (true)\").item.json.owner }}",
+              "type": "string"
+            },
+            {
+              "id": "551cc50b-ff36-4e44-9b09-26c6e1069ea4",
+              "name": "repo",
+              "value": "={{ $(\"Repo Config (true)\").item.json.repo }}",
+              "type": "string"
+            },
+            {
+              "id": "16e34406-5be0-4148-984d-22dd13df7253",
+              "name": "path",
+              "value": "={{ $('Fill Template (true)').item.json.path }}",
+              "type": "string"
+            },
+            {
+              "id": "45e0c0cb-311e-45f2-be33-d726b74169d9",
+              "name": "message",
+              "value": "={{ $('Fill Template (true)').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "11173413-d4f0-4cb8-afd9-93f6464afc93",
+              "name": "content",
+              "value": "={{ $('Fill Template (true)').item.json.content_b64 }}",
+              "type": "string"
+            },
+            {
+              "id": "7a250262-2190-4979-9e8c-e2af49c23481",
+              "name": "branch",
+              "value": "={{ $('Fill Template (true)').item.json.branch }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3088,
+        48
+      ],
+      "id": "8b0519e9-985c-49a4-a23a-f4b2f5db23ce",
+      "name": "Build Commit Request (true)"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}/contents/{{$json.path}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"{{$json.message}}\",\n  \"content\": \"{{$json.content}}\",\n  \"branch\": \"{{$json.branch}}\"\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3296,
+        48
+      ],
+      "id": "fc39f261-dd36-4268-9325-b94d197efa0d",
+      "name": "Commit File (true)",
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8316ee6-34d3-4542-8c71-6db7672e9faf",
+              "name": "owner",
+              "value": "={{ $(\"Repo Config (true)\").item.json.owner }}",
+              "type": "string"
+            },
+            {
+              "id": "53a2081d-ed94-4065-bd9b-11880e7c9c19",
+              "name": "repo",
+              "value": "={{ $(\"Repo Config (true)\").item.json.repo }}",
+              "type": "string"
+            },
+            {
+              "id": "399e52c2-8bd9-4dae-8d0e-a32e738372dd",
+              "name": "head",
+              "value": "={{ $('Fill Template (true)').item.json.branch }}",
+              "type": "string"
+            },
+            {
+              "id": "f656bdde-7ce4-444e-8bea-b01821f9de7b",
+              "name": "base",
+              "value": "={{ $(\"Repo Config (true)\").item.json.base }}",
+              "type": "string"
+            },
+            {
+              "id": "023f1982-f9fa-4bfe-8b4b-93037f3f3115",
+              "name": "title",
+              "value": "={{ 'Entra onboarding for ' + ($(\"Add Join Key (payload-true)\").item.json.user_id || 'app') }}",
+              "type": "string"
+            },
+            {
+              "id": "282aa742-5087-44eb-b422-78ba2f801d18",
+              "name": "body",
+              "value": "={{ 'Adds onboarding config at ' + $(\"Commit File (true)\").item.json.content.path + ' — generated by n8n.' }}",
+              "type": "string"
+            },
+            {
+              "id": "5a2829fd-9a39-4ff9-b3da-77f08db8cb4d",
+              "name": "maintainer_can_modify",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "021f4444-2286-4d17-9de0-df4b5509035c",
+              "name": "draft",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3504,
+        48
+      ],
+      "id": "7b599b69-6a0e-4a18-9517-14ba835acea6",
+      "name": "Build PR Request (true)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}/pulls",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": \"{{$json.title}}\",\n  \"head\": \"{{$json.head}}\",\n  \"base\": \"{{$json.base}}\",\n  \"body\": \"{{$json.body}}\",\n  \"maintainer_can_modify\": {{$json.maintainer_can_modify}},\n  \"draft\": {{$json.draft}}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3712,
+        48
+      ],
+      "id": "5b2ff1e1-c224-47c4-9855-43766a16f34c",
+      "name": "Open PR (true)",
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cc9c199d-9e0c-4a82-ada1-bcb27b4e0f31",
+              "name": "status",
+              "value": "completed",
+              "type": "string"
+            },
+            {
+              "id": "2a08ede6-9c43-4060-8426-4f9a3b4be4cd",
+              "name": "prUrl",
+              "value": "={{ $(\"Open PR (true)\").item.json.html_url }}",
+              "type": "string"
+            },
+            {
+              "id": "441b5faf-cbec-42dc-a08f-2fd0d275be6a",
+              "name": "prNumber",
+              "value": "={{ $(\"Open PR (true)\").item.json.number }}",
+              "type": "string"
+            },
+            {
+              "id": "6245031d-1e58-4a20-86a8-c4361adc63dc",
+              "name": "branch",
+              "value": "={{ $('Fill Template (true)').item.json.branch }}",
+              "type": "string"
+            },
+            {
+              "id": "dc50c225-654d-4c2b-a217-7aab72b244a5",
+              "name": "path",
+              "value": "={{ $('Fill Template (true)').item.json.path }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4272,
+        48
+      ],
+      "id": "cf6bed01-51b7-4672-b0b5-06ac990a154f",
+      "name": "Build Response (true)"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        4512,
+        48
+      ],
+      "id": "83bc1edf-ecc5-4a11-ba75-ace43b2f8078",
+      "name": "Respond: Completed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2db29510-8331-488f-81f5-0ae846ab2531",
+              "name": "event",
+              "value": "pr_opened",
+              "type": "string"
+            },
+            {
+              "id": "f250f52b-5b88-4ea3-931e-d6135871c43d",
+              "name": "workflow",
+              "value": "entra_onboarding",
+              "type": "string"
+            },
+            {
+              "id": "892803f4-ef99-431f-8c9f-d41cd17747b8",
+              "name": "node",
+              "value": "Open PR (true)",
+              "type": "string"
+            },
+            {
+              "id": "6b6f3f14-77b4-4743-b939-7df82789173a",
+              "name": "correlationid",
+              "value": "={{ $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "d8b7a08d-9b30-4ad2-b7ca-bb9b534ed733",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "633d02c8-8e0b-40e5-bef3-a5bfcad29e5b",
+              "name": "error",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "3b50aa99-b7cd-4c67-a46d-b02a1ee8f8e9",
+              "name": "level",
+              "value": "INFO",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3920,
+        48
+      ],
+      "id": "7bfabe62-4063-46dc-88c7-85cb4c9b8cb1",
+      "name": "Build Log (true)"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": "entra_workflow_logs",
+        "options": {}
+      },
+      "id": "7fcc1e1e-390f-4106-8042-ec3fd4bd0ce5",
+      "name": "Log Event (true)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        4096,
+        48
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Inputs\nconst tpl = $json.template_text || '';\nconst userId = $json.user_id || 'unknown';\nconst appId  = $json.app_id ?? '';\n\n// Minimal placeholder map (expand later as you collect answers)\nconst replacements = {\n  application_id: String(appId || 'TBD'),\n  application_name: String(userId || 'TBD'),\n  environment: 'TBD',\n  custodian_name: 'TBD',\n  architect_name: 'TBD',\n  operating_system: 'TBD',\n  database: 'TBD',\n  application_architecture: 'TBD',\n  sso_type: 'TBD',                  // sso-idp or sso-sp\n  justification_text: 'TBD',\n  entra_tenant_id: 'TBD',\n  entra_client_id: 'TBD',\n  redirect_url_1: 'https://example/app/redirect1',\n  redirect_url_2: 'https://example/app/redirect2',\n  reply_url_1: 'https://example/app/reply1',\n  reply_url_2: 'https://example/app/reply2',\n  logout_url_1: 'https://example/app/logout1',\n  logout_url_2: 'https://example/app/logout2',\n  saml_metadata_url: 'https://example/metadata.xml',\n  certificate_1: 'TBD',\n  certificate_2: 'TBD',\n  creator: userId,\n  creation_timestamp: new Date().toISOString(),\n  correlation_id: ($execution.id || (Date.now() + '-' + Math.random().toString(16).slice(2)))\n};\n\n// Simple moustache-style replacement: {{ key }}\nlet filled = tpl;\nfor (const [key, value] of Object.entries(replacements)) {\n  const re = new RegExp(`{{\\\\s*${key}\\\\s*}}`, 'g');\n  filled = filled.replace(re, String(value));\n}\n\n// Build git objects\nconst stamp  = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');\nconst branch = `onboard/${userId}-${stamp}`;\nconst path   = `onboarding/${userId}-${stamp}.yaml`;\nconst message = `Add onboarding for ${userId}`;\nconst content_b64 = Buffer.from(filled, 'utf8').toString('base64');\n\nreturn [{\n  json: {\n    branch,\n    path,\n    message,\n    content_b64,\n    preview: filled.slice(0, 400) // handy for a quick glance\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1632,
+        -48
+      ],
+      "id": "94d777f4-e323-41e6-a5d2-c99fda4b5def",
+      "name": "Fill Template (true)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "762502ff-87ed-429b-b18e-f89c6c2784fe",
+              "name": "event",
+              "value": "ask_next_question",
+              "type": "string"
+            },
+            {
+              "id": "26467740-35e0-4f02-8a02-f734cb289aec",
+              "name": "workflow",
+              "value": "entra_onboarding",
+              "type": "string"
+            },
+            {
+              "id": "fb2f1047-7eb5-43e6-aa1c-c526bb4bf671",
+              "name": "node",
+              "value": "Respond: Next Question",
+              "type": "string"
+            },
+            {
+              "id": "c3b3ecd3-6c91-4c7c-9459-0abfd479acef",
+              "name": "correlationid",
+              "value": "={{ $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "2f14c389-290a-47bf-9d19-507290beaa47",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "d14c4e0f-a050-4e08-85d7-36d797a1bff9",
+              "name": "error",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "a0448531-8e87-436f-9864-ce1aa16dab24",
+              "name": "level",
+              "value": "INFO",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        304
+      ],
+      "id": "a6eb4cef-dacc-4e9e-82db-59b00b8213e8",
+      "name": "Build Log (false)"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": "entra_workflow_logs",
+        "options": {}
+      },
+      "id": "adaba6c1-87db-4496-bc2b-c27cf4fcce9e",
+      "name": "Log Event (false)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        304
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZEQrEsYIsdT3YKO",
+          "name": "CRED.postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "306153cc-7e85-4e56-ae13-5d9b15a34453",
+              "leftValue": "={{ $json.answer_upper === 'CRASH' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1616,
+        160
+      ],
+      "id": "058445b2-d54b-4517-a0e4-bd5f0a00651b",
+      "name": "Test Fail Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error('Forced failure for error-logger test');\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        -16
+      ],
+      "id": "6b60029b-6f7c-434d-b6ca-6d80196c3dae",
+      "name": "Throw Error (TEST)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8240d4d5-7bcc-45ee-8a67-8855645ba9cb",
+              "name": "answer_upper",
+              "value": "={{ ($json.body && $json.body.answer) ? String($json.body.answer).toUpperCase() : '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1920,
+        160
+      ],
+      "id": "bc68521c-ad83-4ddb-abd4-6e7f414e4f2e",
+      "name": "Extract Answer"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation State": {
+      "main": [
+        [
+          {
+            "node": "Fetch Questionnaire JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields (Normalize State)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Questionnaire JSON": {
+      "main": [
+        [
+          {
+            "node": "Questions → Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Questionnaire Complete": {
+      "main": [
+        [
+          {
+            "node": "Compute State Update (true)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Compute State Update (false)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch YAML Template": {
+      "main": [
+        [
+          {
+            "node": "Extract Template Text (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields (Normalize Webhook)": {
+      "main": [
+        [
+          {
+            "node": "Merge Input + State",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields (Normalize State)": {
+      "main": [
+        [
+          {
+            "node": "Merge Input + State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Input + State": {
+      "main": [
+        [
+          {
+            "node": "Save Answer (Postgres)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add Join Key — Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Answer (Postgres)": {
+      "main": [
+        [
+          {
+            "node": "Verify Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Answer": {
+      "main": [
+        []
+      ]
+    },
+    "Add Join Key — Payload": {
+      "main": [
+        [
+          {
+            "node": "Merge Payload + Questions",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Questions → Array": {
+      "main": [
+        [
+          {
+            "node": "Merge Payload + Questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Payload + Questions": {
+      "main": [
+        [
+          {
+            "node": "Compute Next Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Next Question": {
+      "main": [
+        [
+          {
+            "node": "Check Questionnaire Complete",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Force Complete (TEST)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute State Update (false)": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation State (false)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation State (false)": {
+      "main": [
+        [
+          {
+            "node": "Verify State Row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Log (false)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute State Update (true)": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation State (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation State (true)": {
+      "main": [
+        [
+          {
+            "node": "Respond: Completed (temp)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch YAML Template",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add Join Key (payload-true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Response (false)": {
+      "main": [
+        [
+          {
+            "node": "Respond (Next Question)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Force Complete (TEST)": {
+      "main": [
+        [
+          {
+            "node": "Check Questionnaire Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Template Text (true)": {
+      "main": [
+        [
+          {
+            "node": "Merge Template + Payload (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Join Key (payload-true)": {
+      "main": [
+        [
+          {
+            "node": "Merge Template + Payload (true)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Template + Payload (true)": {
+      "main": [
+        [
+          {
+            "node": "Fill Template (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repo Config (true)": {
+      "main": [
+        [
+          {
+            "node": "Get Base Ref",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge PR Context (A)",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Get Base Ref1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Base Ref": {
+      "main": [
+        [
+          {
+            "node": "Extract Base SHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Base SHA": {
+      "main": [
+        [
+          {
+            "node": "Merge PR Context (A)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge PR Context (A)": {
+      "main": [
+        [
+          {
+            "node": "WhoAmI (temporarily)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Branch Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Branch (true)": {
+      "main": [
+        [
+          {
+            "node": "Build Commit Request (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Branch Request": {
+      "main": [
+        [
+          {
+            "node": "Create Branch (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Commit Request (true)": {
+      "main": [
+        [
+          {
+            "node": "Commit File (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit File (true)": {
+      "main": [
+        [
+          {
+            "node": "Build PR Request (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PR Request (true)": {
+      "main": [
+        [
+          {
+            "node": "Open PR (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open PR (true)": {
+      "main": [
+        [
+          {
+            "node": "Build Log (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Response (true)": {
+      "main": [
+        [
+          {
+            "node": "Respond: Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Log (true)": {
+      "main": [
+        [
+          {
+            "node": "Log Event (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Event (true)": {
+      "main": [
+        [
+          {
+            "node": "Build Response (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fill Template (true)": {
+      "main": [
+        [
+          {
+            "node": "Repo Config (true)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Log (false)": {
+      "main": [
+        [
+          {
+            "node": "Log Event (false)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Event (false)": {
+      "main": [
+        [
+          {
+            "node": "Build Response (false)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Fail Switch": {
+      "main": [
+        [
+          {
+            "node": "Throw Error (TEST)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Conversation State",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields (Normalize Webhook)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throw Error (TEST)": {
+      "main": [
+        []
+      ]
+    },
+    "Extract Answer": {
+      "main": [
+        [
+          {
+            "node": "Test Fail Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "XUTDYxxgZQuTdnYU"
+  },
+  "versionId": "b56b89a5-c617-4315-9230-27f800cd6b10",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
+  },
+  "id": "VLnuUGCBrpYU06Mn",
+  "tags": []
+}
