@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS public.workflow_logs (
+CREATE TABLE IF NOT EXISTS public.entra_workflow_logs (
   id            BIGSERIAL PRIMARY KEY,
   event         TEXT        NOT NULL,
   workflow      TEXT        NOT NULL,
