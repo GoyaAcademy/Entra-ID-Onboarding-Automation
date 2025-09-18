@@ -1,0 +1,36 @@
+application:
+  id: "TBD"
+  name: "dev-001"
+  environment: "TBD" # e.g., dev, test, prod
+  custodian: "TBD"
+  architect: "TBD"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "TBD" # sso-idp or sso-sp
+  justification: "TBD"
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - "https://example/app/redirect1"
+    - "https://example/app/redirect2"
+  reply_urls:
+    - "https://example/app/reply1"
+    - "https://example/app/reply2"
+  logout_urls:
+    - "https://example/app/logout1"
+    - "https://example/app/logout2"
+  saml_metadata_url: "https://example/metadata.xml"
+  certificates:
+    - "TBD"
+    - "TBD"
+
+metadata:
+  createdBy: "dev-001"
+  createdAt: "2025-09-18T01:54:32.119Z"
+  correlationId: "113"
