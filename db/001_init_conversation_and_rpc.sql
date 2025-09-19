@@ -1,4 +1,4 @@
--- db/migrations/001_init_conversation_and_rpc.sql
+-- db/001_init_conversation_and_rpc.sql
 -- Purpose: Create conversation tables, a simple RPC used by the agent (via PostgREST),
 --          and grants needed for PostgREST anonymous access.
 
