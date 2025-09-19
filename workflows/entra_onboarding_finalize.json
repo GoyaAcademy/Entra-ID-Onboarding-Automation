@@ -1,0 +1,627 @@
+{
+  "name": "entra_onboarding_finalize",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "entra-onboard-finalize",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2483c0be-f99b-4b23-8606-abb44da3e1f4",
+      "name": "Webhook (Finalize)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        0
+      ],
+      "webhookId": "489327c7-7288-4d2b-a456-b375e966289f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "user_id",
+              "value": "={{$json.body.user_id}}",
+              "type": "string"
+            },
+            {
+              "name": "app_id",
+              "value": "={{$json.body.app_id}}",
+              "type": "string"
+            },
+            {
+              "name": "application_name",
+              "value": "={{$json.body.application_name}}",
+              "type": "string"
+            },
+            {
+              "name": "sso",
+              "value": "={{$json.body.sso}}",
+              "type": "object"
+            },
+            {
+              "name": "contacts",
+              "value": "={{$json.body.contacts}}",
+              "type": "object"
+            },
+            {
+              "name": "environment",
+              "value": "={{$json.body.environment}}",
+              "type": "string"
+            },
+            {
+              "name": "justification_text",
+              "value": "={{$json.body.justification_text}}",
+              "type": "string"
+            },
+            {
+              "name": "answers",
+              "value": "={{$json.body.answers || []}}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1056,
+        0
+      ],
+      "id": "fa3c599b-9a23-4d93-9df3-6c030799a10a",
+      "name": "Extract Payload"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/refs/heads/main/templates/entra_app_onboarding.yaml",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "d2a2139d-4732-4f16-a77b-162718dca3da",
+      "name": "Fetch YAML Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -832,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst tpl = $json.data || '';\nconst sso = $json.sso || {};\nconst contacts = $json.contacts || {};\n\n// Map replacements expected by template\nconst replacements = {\n  application_id: String($json.app_id || 'TBD'),\n  application_name: String($json.application_name || 'TBD'),\n  environment: String($json.environment || 'TBD'),\n  custodian_name: String(contacts.custodian_name || 'TBD'),\n  architect_name: String(contacts.architect_name || 'TBD'),\n  operating_system: 'TBD',\n  database: 'TBD',\n  application_architecture: 'TBD',\n  sso_type: String(sso.protocol || 'TBD'),\n  justification_text: String($json.justification_text || 'TBD'),\n  entra_tenant_id: 'TBD',\n  entra_client_id: 'TBD',\n  redirect_url_1: String((sso.redirect_urls||[])[0] || ''),\n  redirect_url_2: String((sso.redirect_urls||[])[1] || ''),\n  reply_url_1: String((sso.reply_urls||[])[0] || ''),\n  reply_url_2: String((sso.reply_urls||[])[1] || ''),\n  logout_url_1: String((sso.logout_urls||[])[0] || ''),\n  logout_url_2: String((sso.logout_urls||[])[1] || ''),\n  saml_metadata_url: String((sso.saml||{}).metadata_url || ''),\n  certificate_1: String((sso.saml||{}).certificate || 'TBD'),\n  certificate_2: 'TBD',\n  creator: String($json.user_id || 'unknown'),\n  creation_timestamp: new Date().toISOString(),\n  correlation_id: $execution.id\n};\n\nlet filled = tpl;\nfor (const [k,v] of Object.entries(replacements)) {\n  const re = new RegExp(`{{\\\\s*${k}\\\\s*}}`, 'g');\n  filled = filled.replace(re, String(v));\n}\n\n// Git commit info\nconst stamp  = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');\nconst safeName = String($json.app_id || $json.application_name || 'app').replace(/[^a-zA-Z0-9._-]/g,'-');\nconst branch = `onboard/${safeName}-${stamp}`;\nconst path   = `onboarding/${safeName}-${stamp}.yaml`;\nconst message = `Onboard ${safeName} via agent`;\nconst content_b64 = Buffer.from(filled, 'utf8').toString('base64');\n\nreturn [{\n  json: { branch, path, message, content_b64, preview: filled.slice(0, 400) }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -160
+      ],
+      "id": "4fdd10d6-a6a1-465c-8de7-ea4b9a8396d5",
+      "name": "Fill Template"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "owner",
+              "value": "GoyaAcademy",
+              "type": "string"
+            },
+            {
+              "name": "repo",
+              "value": "Entra-ID-Onboarding-Automation",
+              "type": "string"
+            },
+            {
+              "name": "base",
+              "value": "main",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        -160
+      ],
+      "id": "d88f7874-28fd-4eb1-bbfd-ae10651bcb73",
+      "name": "Repo Config"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}/git/ref/heads/{{$json.base}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        -160
+      ],
+      "id": "7c28d075-5dda-48d8-8213-8c46f15e6509",
+      "name": "Get Base Ref",
+      "credentials": {
+        "githubApi": {
+          "id": "CRED.github",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "base_sha",
+              "value": "={{ $json.object.sha }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        -160
+      ],
+      "id": "c49e3948-a421-4a14-88e6-c902134c6b6e",
+      "name": "Extract Base SHA"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "url",
+              "value": "={{ 'https://api.github.com/repos/' + $json.owner + '/' + $json.repo + '/git/refs' }}",
+              "type": "string"
+            },
+            {
+              "name": "ref",
+              "value": "={{ 'refs/heads/' + $('Fill Template').item.json.branch }}",
+              "type": "string"
+            },
+            {
+              "name": "sha",
+              "value": "={{ $json.base_sha }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        -160
+      ],
+      "id": "4deb2276-8e4c-4258-8433-38c780a146bf",
+      "name": "Build Branch Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"ref\": \"{{$json.ref}}\", \"sha\": \"{{$json.sha}}\" }",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        -160
+      ],
+      "id": "cac24a5c-d4e8-4551-8516-4d81bf366cfc",
+      "name": "Create Branch",
+      "credentials": {
+        "githubApi": {
+          "id": "CRED.github",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "owner",
+              "value": "={{ $('Repo Config').item.json.owner }}",
+              "type": "string"
+            },
+            {
+              "name": "repo",
+              "value": "={{ $('Repo Config').item.json.repo }}",
+              "type": "string"
+            },
+            {
+              "name": "path",
+              "value": "={{ $('Fill Template').item.json.path }}",
+              "type": "string"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Fill Template').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('Fill Template').item.json.content_b64 }}",
+              "type": "string"
+            },
+            {
+              "name": "branch",
+              "value": "={{ $('Fill Template').item.json.branch }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        -160
+      ],
+      "id": "24e7cc7a-9b4b-41ae-b4a1-5cdd8ee09767",
+      "name": "Build Commit Request"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}/contents/{{$json.path}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"message\":\"{{$json.message}}\",\"content\":\"{{$json.content}}\",\"branch\":\"{{$json.branch}}\"}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        -160
+      ],
+      "id": "4a993a30-714e-4776-a1e8-d73b3d2e1952",
+      "name": "Commit File",
+      "credentials": {
+        "githubApi": {
+          "id": "CRED.github",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "owner",
+              "value": "={{ $('Repo Config').item.json.owner }}",
+              "type": "string"
+            },
+            {
+              "name": "repo",
+              "value": "={{ $('Repo Config').item.json.repo }}",
+              "type": "string"
+            },
+            {
+              "name": "head",
+              "value": "={{ $('Fill Template').item.json.branch }}",
+              "type": "string"
+            },
+            {
+              "name": "base",
+              "value": "={{ $('Repo Config').item.json.base }}",
+              "type": "string"
+            },
+            {
+              "name": "title",
+              "value": "={{ 'Entra onboarding for ' + ($('Extract Payload').item.json.application_name || $('Extract Payload').item.json.app_id) }}",
+              "type": "string"
+            },
+            {
+              "name": "body",
+              "value": "={{ 'Adds onboarding config at ' + $('Commit File').item.json.content.path + ' \u2014 generated by agent.' }}",
+              "type": "string"
+            },
+            {
+              "name": "maintainer_can_modify",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "name": "draft",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        -160
+      ],
+      "id": "60978abb-9578-43c7-b01f-1953702c91d7",
+      "name": "Build PR Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}/pulls",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"title\":\"{{$json.title}}\",\"head\":\"{{$json.head}}\",\"base\":\"{{$json.base}}\",\"body\":\"{{$json.body}}\",\"maintainer_can_modify\":{{$json.maintainer_can_modify}},\"draft\":{{$json.draft}}}"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        -160
+      ],
+      "id": "21f69c5d-7403-4fca-840a-a1e9cb210dde",
+      "name": "Open PR",
+      "credentials": {
+        "githubApi": {
+          "id": "CRED.github",
+          "name": "CRED.github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"completed\", \"prUrl\": \"{{$json.html_url}}\", \"branch\": \"={{$('Fill Template').item.json.branch}}\", \"path\": \"={{$('Fill Template').item.json.path}}\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1568,
+        -160
+      ],
+      "id": "cb17d64a-da33-4b7a-a0d0-b3671a816102",
+      "name": "Respond (PR URL)"
+    }
+  ],
+  "connections": {
+    "Webhook (Finalize)": {
+      "main": [
+        [
+          {
+            "node": "Extract Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Payload": {
+      "main": [
+        [
+          {
+            "node": "Fetch YAML Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch YAML Template": {
+      "main": [
+        [
+          {
+            "node": "Fill Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fill Template": {
+      "main": [
+        [
+          {
+            "node": "Repo Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repo Config": {
+      "main": [
+        [
+          {
+            "node": "Get Base Ref",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Base Ref": {
+      "main": [
+        [
+          {
+            "node": "Extract Base SHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Base SHA": {
+      "main": [
+        [
+          {
+            "node": "Build Branch Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Branch Request": {
+      "main": [
+        [
+          {
+            "node": "Create Branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Branch": {
+      "main": [
+        [
+          {
+            "node": "Build Commit Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Commit Request": {
+      "main": [
+        [
+          {
+            "node": "Commit File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit File": {
+      "main": [
+        [
+          {
+            "node": "Build PR Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PR Request": {
+      "main": [
+        [
+          {
+            "node": "Open PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open PR": {
+      "main": [
+        [
+          {
+            "node": "Respond (PR URL)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5b34e6d6-d4c6-407b-bd18-82ac9d0ea2b6",
+  "meta": {
+    "templateId": "entra_onboarding_finalize"
+  },
+  "id": "8cde8eb5-0a82-4b5e-9367-518415e4bbf8",
+  "tags": []
+}
