@@ -1,4 +1,3 @@
-~~~markdown
 # Entra Onboarding Chat Workflow
 
 This workflow automates **interactive onboarding for Entra ID applications**, guiding users through a questionnaire and generating GitHub pull requests with onboarding configuration files.
@@ -151,5 +150,4 @@ Each event logged includes:
 - Ensure DB migration is applied (adds `timestamp` + `workflowVersion` to `entra_workflow_logs`).
 - Disabled test/debug nodes from earlier drafts have been removed in this cleaned version.
 - GitHub repo config (`owner`, `repo`, `base`) should be set via environment variables in production.
-~~~
 
