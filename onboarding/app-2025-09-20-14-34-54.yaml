@@ -1,0 +1,36 @@
+application:
+  id: "TBD"
+  name: "TBD"
+  environment: "TBD" # e.g., dev, test, prod
+  custodian: "TBD"
+  architect: "TBD"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "TBD" # sso-idp or sso-sp
+  justification: "TBD"
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - ""
+    - ""
+  logout_urls:
+    - ""
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - "TBD"
+    - "TBD"
+
+metadata:
+  createdBy: "unknown"
+  createdAt: "2025-09-20T14:34:54.158Z"
+  correlationId: "294"
