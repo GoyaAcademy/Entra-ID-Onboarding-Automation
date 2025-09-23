@@ -8,13 +8,13 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "f2b3e437-ef39-42d5-9b51-0baf8b6348f7",
+      "id": "1a2b75a1-9bc6-4ea7-bab2-968d04df5189",
       "name": "Webhook (Finalize)",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1344,
-        0
+        -2656,
+        112
       ],
       "webhookId": "c2da7cf8-ef5e-4a4a-8b80-04a95b3a236b"
     },
@@ -22,14 +22,46 @@
       "parameters": {
         "assignments": {
           "assignments": [
-            { "name": "user_id", "value": "={{$json.body.user_id}}", "type": "string" },
-            { "name": "app_id", "value": "={{$json.body.app_id}}", "type": "string" },
-            { "name": "application_name", "value": "={{$json.body.application_name}}", "type": "string" },
-            { "name": "sso", "value": "={{$json.body.sso}}", "type": "object" },
-            { "name": "contacts", "value": "={{$json.body.contacts}}", "type": "object" },
-            { "name": "environment", "value": "={{$json.body.environment}}", "type": "string" },
-            { "name": "justification_text", "value": "={{$json.body.justification_text}}", "type": "string" },
-            { "name": "answers", "value": "={{$json.body.answers || []}}", "type": "array" }
+            {
+              "name": "user_id",
+              "value": "={{$json.body.payload.user_id}}",
+              "type": "string"
+            },
+            {
+              "name": "app_id",
+              "value": "={{$json.body.payload.app_id}}",
+              "type": "string"
+            },
+            {
+              "name": "application_name",
+              "value": "={{$json.body.payload.application_name}}",
+              "type": "string"
+            },
+            {
+              "name": "sso",
+              "value": "={{$json.body.payload.sso}}",
+              "type": "object"
+            },
+            {
+              "name": "contacts",
+              "value": "={{$json.body.payload.contacts}}",
+              "type": "object"
+            },
+            {
+              "name": "environment",
+              "value": "={{$json.body.payload.environment}}",
+              "type": "string"
+            },
+            {
+              "name": "justification_text",
+              "value": "={{$json.body.payload.justification_text}}",
+              "type": "string"
+            },
+            {
+              "name": "answers",
+              "value": "={{$json.body.payload.answers || []}}",
+              "type": "array"
+            }
           ]
         },
         "options": {}
@@ -37,59 +69,76 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1056,
-        0
+        -2368,
+        112
       ],
-      "id": "c3cf14a7-d2a7-4c33-b905-30b9a8ff3d05",
+      "id": "e33e1922-d432-42a4-b29d-b229bc0e8559",
       "name": "Extract Payload"
     },
     {
       "parameters": {
         "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/refs/heads/main/templates/entra_app_onboarding.yaml",
         "options": {
-          "response": { "response": { "responseFormat": "text" } },
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
           "timeout": 10000
         }
       },
-      "id": "ec927d3f-2dc2-4569-824d-cfb3d7d02a3a",
+      "id": "f20e01a8-a15c-4a77-a890-927e86372006",
       "name": "Fetch YAML Template",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        -832,
-        -160
+        -2144,
+        -64
       ]
     },
     {
       "parameters": {
-        "jsCode": "const tpl = $json.data || '';\nconst sso = $json.sso || {};\nconst contacts = $json.contacts || {};\n\n// Map replacements expected by template\nconst replacements = {\n  application_id: String($json.app_id || 'TBD'),\n  application_name: String($json.application_name || 'TBD'),\n  environment: String($json.environment || 'TBD'),\n  custodian_name: String(contacts.custodian_name || 'TBD'),\n  architect_name: String(contacts.architect_name || 'TBD'),\n  operating_system: 'TBD',\n  database: 'TBD',\n  application_architecture: 'TBD',\n  sso_type: String(sso.protocol || 'TBD'),\n  justification_text: String($json.justification_text || 'TBD'),\n  entra_tenant_id: 'TBD',\n  entra_client_id: 'TBD',\n  redirect_url_1: String((sso.redirect_urls||[])[0] || ''),\n  redirect_url_2: String((sso.redirect_urls||[])[1] || ''),\n  reply_url_1: String((sso.reply_urls||[])[0] || ''),\n  reply_url_2: String((sso.reply_urls||[])[1] || ''),\n  logout_url_1: String((sso.logout_urls||[])[0] || ''),\n  logout_url_2: String((sso.logout_urls||[])[1] || ''),\n  saml_metadata_url: String((sso.saml||{}).metadata_url || ''),\n  certificate_1: String((sso.saml||{}).certificate || 'TBD'),\n  certificate_2: 'TBD',\n  creator: String($json.user_id || 'unknown'),\n  creation_timestamp: new Date().toISOString(),\n  correlation_id: $execution.id\n};\n\nlet filled = tpl;\nfor (const [k,v] of Object.entries(replacements)) {\n  const re = new RegExp(`{{\\\\s*${k}\\\\s*}}`, 'g');\n  filled = filled.replace(re, String(v));\n}\n\n// Git commit info\nconst stamp  = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');\nconst safeName = String($json.app_id || $json.application_name || 'app').replace(/[^a-zA-Z0-9._-]/g,'-');\nconst branch = `onboard/${safeName}-${stamp}`;\nconst path   = `onboarding/${safeName}-${stamp}.yaml`;\nconst message = `Onboard ${safeName} via agent`;\nconst content_b64 = Buffer.from(filled, 'utf8').toString('base64');\n\nreturn [{\n  json: { branch, path, message, content_b64, preview: filled.slice(0, 400) }\n}];\n"
+        "jsCode": "const tpl = $json.data || '';\nconst sso = $json.sso || {};\nconst contacts = $json.contacts || {};\n\nconst replacements = {\n  application_id: String($json.app_id || 'TBD'),\n  application_name: String($json.application_name || 'TBD'),\n  environment: String($json.environment || 'TBD'),\n  custodian_name: String(contacts.custodian_name || 'TBD'),\n  architect_name: String(contacts.architect_name || 'TBD'),\n  operating_system: 'TBD',\n  database: 'TBD',\n  application_architecture: 'TBD',\n  sso_type: String(sso.protocol || 'TBD'),\n  justification_text: String($json.justification_text || 'TBD'),\n  entra_tenant_id: 'TBD',\n  entra_client_id: 'TBD',\n  redirect_url_1: String((sso.redirect_urls||[])[0] || ''),\n  redirect_url_2: String((sso.redirect_urls||[])[1] || ''),\n  reply_url_1: String((sso.reply_urls||[])[0] || ''),\n  reply_url_2: String((sso.reply_urls||[])[1] || ''),\n  logout_url_1: String((sso.logout_urls||[])[0] || ''),\n  logout_url_2: String((sso.logout_urls||[])[1] || ''),\n  saml_metadata_url: String(((sso.saml)||{}).metadata_url || ''),\n  certificate_1: String(((sso.saml)||{}).certificate || 'TBD'),\n  certificate_2: 'TBD',\n  creator: String($json.user_id || 'unknown'),\n  creation_timestamp: new Date().toISOString(),\n  correlation_id: $execution.id\n};\n\nlet filled = tpl;\nfor (const [k,v] of Object.entries(replacements)) {\n  const re = new RegExp(`{{\\\\s*${k}\\\\s*}}`, 'g');\n  filled = filled.replace(re, String(v));\n}\n\nconst stamp  = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');\nconst safeName = String($json.app_id || $json.application_name || 'app').replace(/[^a-zA-Z0-9._-]/g,'-');\nconst branch = `onboard/${safeName}-${stamp}`;\nconst path   = `onboarding/${safeName}-${stamp}.yaml`;\nconst message = `Onboard ${safeName} via agent`;\nconst content_b64 = Buffer.from(filled, 'utf8').toString('base64');\n\nreturn [{ json: { branch, path, message, content_b64, preview: filled.slice(0, 400) } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -608,
-        -160
+        -1920,
+        -64
       ],
-      "id": "c7bc7487-4fa1-4a1d-9401-757a6c1ef3c2",
+      "id": "5e90ab5d-c4b4-4462-b638-0659a715fba0",
       "name": "Fill Template"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "name": "owner", "value": "GoyaAcademy", "type": "string" },
-            { "name": "repo", "value": "Entra-ID-Onboarding-Automation", "type": "string" },
-            { "name": "base", "value": "main", "type": "string" }
+            {
+              "name": "owner",
+              "value": "GoyaAcademy",
+              "type": "string"
+            },
+            {
+              "name": "repo",
+              "value": "Entra-ID-Onboarding-Automation",
+              "type": "string"
+            },
+            {
+              "name": "base",
+              "value": "main",
+              "type": "string"
+            }
           ]
-        }
+        },
+        "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -384,
-        -160
+        -1696,
+        -64
       ],
-      "id": "7b7ba8ea-8d8d-4d47-887d-23024bbd5798",
+      "id": "bca746bc-cc5e-4e16-bb99-5760994b2080",
       "name": "Repo Config"
     },
     {
@@ -97,52 +146,81 @@
         "url": "=https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}/git/ref/heads/{{$json.base}}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "githubApi",
-        "options": { "response": { "response": { "responseFormat": "json" } } }
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -160,
-        -160
+        -1472,
+        -64
       ],
-      "id": "ba1fe663-fb9a-4210-9821-849ea5797e4e",
+      "id": "0a1594b9-9e57-4707-8646-293343a53034",
       "name": "Get Base Ref",
-      "credentials": { "githubApi": { "id": "CRED.github", "name": "CRED.github" } }
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "name": "base_sha", "value": "={{ $json.object.sha }}", "type": "string" }
+            {
+              "name": "base_sha",
+              "value": "={{ $json.object.sha }}",
+              "type": "string"
+            }
           ]
-        }
+        },
+        "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        32,
-        -160
+        -1280,
+        -64
       ],
-      "id": "e5241319-fd74-4a34-986c-848a74a86ba6",
+      "id": "144bd16c-f6d5-440e-baf3-dfb1d00540df",
       "name": "Extract Base SHA"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "name": "url", "value": "={{ 'https://api.github.com/repos/' + $json.owner + '/' + $json.repo + '/git/refs' }}", "type": "string" },
-            { "name": "ref", "value": "={{ 'refs/heads/' + $('Fill Template').item.json.branch }}", "type": "string" },
-            { "name": "sha", "value": "={{ $json.base_sha }}", "type": "string" }
+            {
+              "name": "url",
+              "value": "={{ 'https://api.github.com/repos/' + $('Repo Config').item.json.owner + '/' + $('Repo Config').item.json.repo + '/git/refs' }}",
+              "type": "string"
+            },
+            {
+              "name": "ref",
+              "value": "={{ 'refs/heads/' + $('Fill Template').item.json.branch }}",
+              "type": "string"
+            },
+            {
+              "name": "sha",
+              "value": "={{ $json.base_sha }}",
+              "type": "string"
+            }
           ]
-        }
+        },
+        "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        240,
-        -160
+        -1072,
+        -64
       ],
-      "id": "3a7582d7-23a5-40af-8d83-31996123b4e0",
+      "id": "2cfa2bfd-ef04-412c-96f0-c61ca24b3ed7",
       "name": "Build Branch Request"
     },
     {
@@ -154,45 +232,87 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Accept", "value": "application/vnd.github+json" },
-            { "name": "X-GitHub-Api-Version", "value": "2022-11-28" }
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={ \"ref\": \"{{$json.ref}}\", \"sha\": \"{{$json.sha}}\" }",
-        "options": { "response": { "response": { "responseFormat": "json" } } }
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        480,
-        -160
+        -832,
+        -64
       ],
-      "id": "59f99fe9-7f1f-41c4-aedc-d167fcdbb03e",
+      "id": "f9aabcb0-adfa-41b1-9d30-13b9a2ccd5da",
       "name": "Create Branch",
-      "credentials": { "githubApi": { "id": "CRED.github", "name": "CRED.github" } }
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "name": "owner",  "value": "={{ $('Repo Config').item.json.owner }}",  "type": "string" },
-            { "name": "repo",   "value": "={{ $('Repo Config').item.json.repo }}",   "type": "string" },
-            { "name": "path",   "value": "={{ $('Fill Template').item.json.path }}", "type": "string" },
-            { "name": "message","value": "={{ $('Fill Template').item.json.message }}", "type": "string" },
-            { "name": "content","value": "={{ $('Fill Template').item.json.content_b64 }}", "type": "string" },
-            { "name": "branch", "value": "={{ $('Fill Template').item.json.branch }}", "type": "string" }
+            {
+              "name": "owner",
+              "value": "={{ $('Repo Config').item.json.owner }}",
+              "type": "string"
+            },
+            {
+              "name": "repo",
+              "value": "={{ $('Repo Config').item.json.repo }}",
+              "type": "string"
+            },
+            {
+              "name": "path",
+              "value": "={{ $('Fill Template').item.json.path }}",
+              "type": "string"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Fill Template').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('Fill Template').item.json.content_b64 }}",
+              "type": "string"
+            },
+            {
+              "name": "branch",
+              "value": "={{ $('Fill Template').item.json.branch }}",
+              "type": "string"
+            }
           ]
-        }
+        },
+        "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        688,
-        -160
+        -624,
+        -64
       ],
-      "id": "fe7f8e3a-c1f1-4ccf-a88a-6323564e78f7",
+      "id": "1e7a2b55-405d-48ee-92a5-8df47c4e1e34",
       "name": "Build Commit Request"
     },
     {
@@ -204,47 +324,97 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Accept", "value": "application/vnd.github+json" },
-            { "name": "X-GitHub-Api-Version", "value": "2022-11-28" }
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\"message\":\"{{$json.message}}\",\"content\":\"{{$json.content}}\",\"branch\":\"{{$json.branch}}\"}",
-        "options": { "response": { "response": { "responseFormat": "json" } } }
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        912,
-        -160
+        -400,
+        -64
       ],
-      "id": "1ad5ac1c-36a8-40a4-a84c-091b86af3084",
+      "id": "8d747995-6af5-41ba-8c11-681c6560168d",
       "name": "Commit File",
-      "credentials": { "githubApi": { "id": "CRED.github", "name": "CRED.github" } }
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "name": "owner", "value": "={{ $('Repo Config').item.json.owner }}", "type": "string" },
-            { "name": "repo", "value": "={{ $('Repo Config').item.json.repo }}", "type": "string" },
-            { "name": "head", "value": "={{ $('Fill Template').item.json.branch }}", "type": "string" },
-            { "name": "base", "value": "={{ $('Repo Config').item.json.base }}", "type": "string" },
-            { "name": "title", "value": "={{ 'Entra onboarding for ' + ($('Extract Payload').item.json.application_name || $('Extract Payload').item.json.app_id) }}", "type": "string" },
-            { "name": "body", "value": "={{ 'Adds onboarding config at ' + $('Commit File').item.json.content.path + ' — generated by agent.' }}", "type": "string" },
-            { "name": "maintainer_can_modify", "value": true, "type": "boolean" },
-            { "name": "draft", "value": false, "type": "boolean" }
+            {
+              "name": "owner",
+              "value": "={{ $('Repo Config').item.json.owner }}",
+              "type": "string"
+            },
+            {
+              "name": "repo",
+              "value": "={{ $('Repo Config').item.json.repo }}",
+              "type": "string"
+            },
+            {
+              "name": "head",
+              "value": "={{ $('Fill Template').item.json.branch }}",
+              "type": "string"
+            },
+            {
+              "name": "base",
+              "value": "={{ $('Repo Config').item.json.base }}",
+              "type": "string"
+            },
+            {
+              "name": "title",
+              "value": "={{ 'Entra onboarding for ' + String($('Extract Payload').item.json.application_name || $('Extract Payload').item.json.app_id || 'app') }}",
+              "type": "string"
+            },
+            {
+              "name": "body",
+              "value": "={{ 'Adds onboarding config at ' + $('Commit File').item.json.content.path + ' — generated by agent.' }}",
+              "type": "string"
+            },
+            {
+              "name": "maintainer_can_modify",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "name": "draft",
+              "value": false,
+              "type": "boolean"
+            }
           ]
-        }
+        },
+        "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1120,
-        -160
+        -192,
+        -64
       ],
-      "id": "1a5bafcf-050d-4e63-a580-bfa69b4892c8",
+      "id": "d054458d-94ee-4881-b395-7c48b9092f1e",
       "name": "Build PR Request"
     },
     {
@@ -256,60 +426,209 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Accept", "value": "application/vnd.github+json" },
-            { "name": "X-GitHub-Api-Version", "value": "2022-11-28" }
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"title\":\"{{$json.title}}\",\"head\":\"{{$json.head}}\",\"base\":\"{{$json.base}}\",\"body\":\"{{$json.body}}\",\"maintainer_can_modify\":{{$json.maintainer_can_modify}},\"draft\":{{$json.draft}}}"
+        "jsonBody": "={\"title\":\"{{$json.title}}\",\"head\":\"{{$json.head}}\",\"base\":\"{{$json.base}}\",\"body\":\"{{$json.body}}\",\"maintainer_can_modify\":{{$json.maintainer_can_modify}},\"draft\":{{$json.draft}}}",
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1344,
-        -160
+        32,
+        -64
       ],
-      "id": "6e632193-3c1a-4fdb-8b70-2ecbd3daad8a",
+      "id": "77b9ec0b-878b-4f93-b0e4-49d91f7bff0d",
       "name": "Open PR",
-      "credentials": { "githubApi": { "id": "CRED.github", "name": "CRED.github" } }
+      "credentials": {
+        "githubApi": {
+          "id": "QbrZkgPGrKH7888z",
+          "name": "CRED.github"
+        }
+      }
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={ \"status\": \"completed\", \"prUrl\": \"{{$json.html_url}}\", \"branch\": \"={{$('Fill Template').item.json.branch}}\", \"path\": \"={{$('Fill Template').item.json.path}}\" }",
-        "options": { "responseCode": 200 }
+        "responseBody": "={{ { status: 'completed', prUrl: $json.html_url, branch: $('Fill Template').item.json.branch, path: $('Fill Template').item.json.path } }}",
+        "options": {
+          "responseCode": 200
+        }
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        1568,
-        -160
+        256,
+        -64
       ],
-      "id": "e4d55fe7-5b8b-497a-8bd4-8ba1411b4717",
+      "id": "15526a04-62b8-41e1-bd2b-ccff3e22c40f",
       "name": "Respond (PR URL)"
     }
   ],
-  "connections": {
-    "Webhook (Finalize)": { "main": [ [ { "node": "Extract Payload", "type": "main", "index": 0 } ] ] },
-    "Extract Payload":  { "main": [ [ { "node": "Fetch YAML Template", "type": "main", "index": 0 } ] ] },
-    "Fetch YAML Template": { "main": [ [ { "node": "Fill Template", "type": "main", "index": 0 } ] ] },
-    "Fill Template": { "main": [ [ { "node": "Repo Config", "type": "main", "index": 0 } ] ] },
-    "Repo Config": { "main": [ [ { "node": "Get Base Ref", "type": "main", "index": 0 } ] ] },
-    "Get Base Ref": { "main": [ [ { "node": "Extract Base SHA", "type": "main", "index": 0 } ] ] },
-    "Extract Base SHA": { "main": [ [ { "node": "Build Branch Request", "type": "main", "index": 0 } ] ] },
-    "Build Branch Request": { "main": [ [ { "node": "Create Branch", "type": "main", "index": 0 } ] ] },
-    "Create Branch": { "main": [ [ { "node": "Build Commit Request", "type": "main", "index": 0 } ] ] },
-    "Build Commit Request": { "main": [ [ { "node": "Commit File", "type": "main", "index": 0 } ] ] },
-    "Commit File": { "main": [ [ { "node": "Build PR Request", "type": "main", "index": 0 } ] ] },
-    "Build PR Request": { "main": [ [ { "node": "Open PR", "type": "main", "index": 0 } ] ] },
-    "Open PR": { "main": [ [ { "node": "Respond (PR URL)", "type": "main", "index": 0 } ] ] }
-  },
   "pinData": {},
-  "active": false,
-  "settings": { "executionOrder": "v1" },
-  "versionId": "4390a4a7-16f1-4c5e-9541-00d185375a3a",
-  "meta": { "templateId": "entra_onboarding_finalize" },
-  "id": "033f3c65-2874-48b6-82a1-b0549ce8812c",
+  "connections": {
+    "Webhook (Finalize)": {
+      "main": [
+        [
+          {
+            "node": "Extract Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Payload": {
+      "main": [
+        [
+          {
+            "node": "Fetch YAML Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch YAML Template": {
+      "main": [
+        [
+          {
+            "node": "Fill Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fill Template": {
+      "main": [
+        [
+          {
+            "node": "Repo Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repo Config": {
+      "main": [
+        [
+          {
+            "node": "Get Base Ref",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Base Ref": {
+      "main": [
+        [
+          {
+            "node": "Extract Base SHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Base SHA": {
+      "main": [
+        [
+          {
+            "node": "Build Branch Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Branch Request": {
+      "main": [
+        [
+          {
+            "node": "Create Branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Branch": {
+      "main": [
+        [
+          {
+            "node": "Build Commit Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Commit Request": {
+      "main": [
+        [
+          {
+            "node": "Commit File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit File": {
+      "main": [
+        [
+          {
+            "node": "Build PR Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PR Request": {
+      "main": [
+        [
+          {
+            "node": "Open PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open PR": {
+      "main": [
+        [
+          {
+            "node": "Respond (PR URL)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "89d168a1-3b41-469d-8759-d9914fc14a7e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
+  },
+  "id": "mSkpVR17Z7iZBUIJ",
   "tags": []
 }
