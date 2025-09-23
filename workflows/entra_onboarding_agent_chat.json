@@ -8,10 +8,10 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.3,
       "position": [
-        -960,
-        0
+        -272,
+        -400
       ],
-      "id": "6d2f2e7d-cd2f-4b73-a7b1-6cf9fe0f406c",
+      "id": "9cb8e521-3c95-4ee6-a963-eeb3795fde70",
       "name": "When chat message received",
       "webhookId": "1e8ffaf6-4809-4cf3-b5bf-c79edc5599e8"
     },
@@ -27,11 +27,17 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        -432,
-        -160
+        64,
+        -128
       ],
-      "id": "2f45e2f1-3469-46a7-bb09-83f5b6ba2cb1",
-      "name": "Model"
+      "id": "1781d8c6-e90e-4e82-9785-5604f02bd28b",
+      "name": "Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "p2L5UbDra453vx65",
+          "name": "OpenAi account"
+        }
+      }
     },
     {
       "parameters": {
@@ -42,58 +48,61 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -432,
-        160
+        176,
+        16
       ],
-      "id": "a3b73af5-81fd-4f9a-ba1a-569a2112b4cc",
+      "id": "ffe0b4d7-bd2e-4daa-b292-620036ffdd8d",
       "name": "Memory"
     },
     {
       "parameters": {
         "options": {
-          "systemMessage": "# Entra Onboarding Agent (SSO Pattern Selector)\n\nYou are an expert assistant that interviews application owners and selects the correct **Microsoft Entra ID** SSO pattern, then prepares an onboarding YAML and opens a GitHub PR.\n\n## Your tools\n- **Questionnaire JSON** — fetches the canonical question list.\n- **State: Get** — read conversation state for this user/app.\n- **State: Save** — persist each answer you collect, and the computed recommendation.\n- **Finalize Onboarding** — when you have everything, send a single JSON payload to this tool to create the YAML and the GitHub PR. It returns the PR URL.\n\n## Conversation protocol\n1. Start by asking for **application_id** and application name.\n2. Then, ask only one focused question at a time. After each answer, call **State: Save** with fields: `user_id`, `app_id`, `question_id`, `answer`.\n3. Use **Questionnaire JSON** at the start to know the available questions. Use them as your guidance, but feel free to ask follow-ups to clarify technical fit.\n4. Periodically use **State: Get** with `user_id` to reload your current progress (idempotent).\n5. When ready, compute a recommendation and confirm with the user.\n\n## Decision rules (abbreviated)\n- If application supports **OpenID Connect/OAuth 2.0**, prefer OIDC (Authorization Code, PKCE for public clients). \n- If not OIDC but supports **SAML 2.0**, choose SAML 2.0 (SP-initiated by default).\n- For legacy **WS-Fed**, use only if explicitly required.\n- For on-prem apps that need inbound access, use **Azure AD Application Proxy**. If app expects **headers or Kerberos**, use App Proxy with **KCD**.\n- For SPAs: OIDC with **PKCE**, implicit is not allowed.\n- Always capture: redirect/reply/logout URLs, claims needed, certificate requirements (SAML), and environment (dev/test/prod).\n\n## Final payload contract\nWhen you and the user confirm, call **Finalize Onboarding** with a JSON body:\n{\n  \"complete\": true,\n  \"user_id\": \"<user>\",\n  \"app_id\": \"<app-id>\",\n  \"application_name\": \"<name>\",\n  \"sso\": {\n    \"protocol\": \"oidc|saml|wsfed\",\n    \"flow\": \"authorization_code|pkce|n/a\",\n    \"proxy\": {\"use_app_proxy\": true|false, \"kcd\": true|false},\n    \"redirect_urls\": [\"...\"],\n    \"reply_urls\": [\"...\"],\n    \"logout_urls\": [\"...\"],\n    \"claims\": [\"email\",\"name\", \"...\"],\n    \"saml\": {\"metadata_url\": \"\", \"certificate\": \"\"}\n  },\n  \"contacts\": {\"custodian_name\": \"\", \"architect_name\": \"\"},\n  \"environment\": \"dev|test|prod\",\n  \"justification_text\": \"<why this pattern fits>\",\n  \"extras\": {}\n}\n\nAlso include **all raw Q&A** you collected as `answers: [{question_id, answer}]`.\n\n### Output style\n- Write concise, friendly messages.\n- After each question, wait for user reply.\n- Do not invent values.\n- If a tool call fails, try again or explain what you need.\n"
+          "systemMessage": "# Entra Onboarding Agent (SSO Pattern Selector)\n\nYou are an expert assistant that interviews application owners and selects the correct **Microsoft Entra ID** SSO pattern, then prepares an onboarding YAML and opens a GitHub PR.\n\n## Your tools\n- **Questionnaire JSON** — fetches the canonical question list.\n- **State: Get** — read conversation state for this user/app. **Call with** `{ args: { ... } }`.\n- **State: Save** — persist each answer and the computed recommendation. **Call with** `{ args: { ... } }`.\n- **Finalize Onboarding** — when you have everything, send a single JSON payload **wrapped** as `{ \"payload\": { ... } }` to create the YAML and GitHub PR. It returns the PR URL.\n\n## Mismatch handling & flexible input acceptance\n- For multiple‑choice, accept **numbers**, **letters**, or the **full label**. Map inputs to the canonical label and **echo what you understood**. If unambiguous, save directly; if ambiguous, **ask a brief confirmation**.\n- Accept common synonyms (e.g., “direct”, “portal”, “both”) and normalize before saving.\n\n## Required args for tool calls (LLM contract; node normalizes aliases)\n- **State: Get** → `{ \"args\": { \"user_id\": \"<string>\" } }` (aliases accepted: `userId`, `uid`, `user`).\n- **State: Save** → `{ \"args\": { \"user_id\": \"<string>\", \"app_id\": \"<string>\", \"question_id\": \"<string>\", \"answer\": <json> } }` (aliases accepted: `userId/appId/questionId`, `user/uid`, `qid`, `value/selection/choice/answerText`).\n- **Finalize Onboarding** → `{ \"payload\": <json> }` (strict; do not rename `payload`).\n\n## Non‑empty guardrails for saving\n- **Every** call to **State: Save** must include **non‑empty** `args.user_id` and `args.app_id`. If either is missing or empty, **do not** call the tool; instead:\n  1) Ask the user for the missing value **or**\n  2) Call **State: Get** with `{ args: { user_id } }` to rehydrate, then include the values and save.\n- If a save fails, inspect the error text. **Do not** say “technical issue”; instead, state the missing/invalid field and ask a short follow‑up, then retry with complete args.\n\n## Conversation protocol\n1. Capture **user_id**, **app_id**, and **application name** up front. Don’t call tools requiring `user_id` until it is known.\n2. Ask one focused question at a time and save each answer with **State: Save** (using `{ args: {...} }`).\n3. Use **Questionnaire JSON** to guide the flow; ask clarifiers if needed for pattern fit, and use the question **id** from the questionnaire for `question_id`.\n4. Periodically **State: Get** with `{ args: { user_id } }` to reload progress (idempotent).\n5. When ready, compute a recommendation and confirm with the user.\n\n## Final payload contract\nCall **Finalize Onboarding** with a body **wrapped** in `payload`:\n{\n  \"payload\": {\n    \"complete\": true,\n    \"user_id\": \"<user>\",\n    \"app_id\": \"<app-id>\",\n    \"application_name\": \"<name>\",\n    \"sso\": {\n      \"protocol\": \"oidc|saml|wsfed\",\n      \"flow\": \"authorization_code|pkce|n/a\",\n      \"proxy\": {\"use_app_proxy\": true|false, \"kcd\": true|false},\n      \"redirect_urls\": [\"...\"],\n      \"reply_urls\": [\"...\"],\n      \"logout_urls\": [\"...\"],\n      \"claims\": [\"email\",\"name\"],\n      \"saml\": {\"metadata_url\": \"\", \"certificate\": \"\"}\n    },\n    \"contacts\": {\"custodian_name\": \"\", \"architect_name\": \"\"},\n    \"environment\": \"dev|test|prod\",\n    \"justification_text\": \"<why this pattern fits>\",\n    \"extras\": {},\n    \"answers\": [{\"question_id\":\"claims\",\"answer\":[\"email\",\"name\"]}]\n  }\n}\n\nInclude **all raw Q&A** as `answers: [{question_id, answer}]`.\n\n### Output style\n- Be concise and friendly.\n- After each question, wait for the user's reply.\n- Do not invent values.\n- If a tool call fails, adjust and retry or explain what you need."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        -192,
-        0
+        192,
+        -400
       ],
-      "id": "3e1a8189-3bc6-4d7e-89df-ce03f44b735a",
+      "id": "49419548-060a-4507-b5db-0c313bf88185",
       "name": "Entra Onboarding Agent"
     },
     {
       "parameters": {
         "toolDescription": "Fetches the official questionnaire JSON that drives the conversation.",
         "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/questionnaires/questionnaire-sso-initiation-entra.json",
-        "options": {
-          "responseType": "json"
-        }
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        96,
-        -256
+        304,
+        -160
       ],
-      "id": "0a4edc18-c892-4ca7-9a2d-c0da384efffc",
+      "id": "08dbd044-5a5d-4fec-9fa6-dd644bed9b33",
       "name": "Questionnaire JSON"
     },
     {
       "parameters": {
-        "toolDescription": "Get current conversation state for a user/app via PostgREST",
+        "toolDescription": "Get current conversation state for a user/app via PostgREST. Accepts { args: { user_id | userId | uid | user } } and normalizes to user_id.",
         "url": "http://postgrest:3000/conversation_state",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
             {
               "name": "user_id",
-              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('user_id', ``, 'string') }}"
-            },
+              "value": "={{ (() => { const i = $fromAI('args', {}, 'json') || {}; return i.user_id ?? i.userId ?? i.uid ?? i.user ?? ''; })() }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "name": "select",
-              "value": "=*"
+              "name": "X-User-Id",
+              "value": "={{ (() => { const i = $fromAI('args', {}, 'json') || {}; return i.user_id ?? i.userId ?? i.uid ?? i.user ?? ''; })() }}"
             }
           ]
         },
@@ -102,55 +111,104 @@
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        96,
-        -80
+        416,
+        -16
       ],
-      "id": "f1aa7c7d-02a3-4d98-b92f-800de5d7c1fa",
+      "id": "fabbd3c8-d415-49bb-8f02-f5021e5222df",
       "name": "State: Get"
     },
     {
       "parameters": {
-        "toolDescription": "Upsert an answer and update state via PostgREST RPC save_answer(user_id, app_id, question_id, answer)",
+        "toolDescription": "Upsert an answer and update state via PostgREST RPC save_answer(user_id, app_id, question_id, answer). Accepts { args: {...} } with flexible aliases.",
         "method": "POST",
         "url": "http://postgrest:3000/rpc/save_answer",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-User-Id",
+              "value": "=={{ $json.args.user_id }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "params=single-object"
+            }
+          ]
+        },
         "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('json', `{}`, 'json') }}",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "=={{ $json.args.user_id }}"
+            },
+            {
+              "name": "app_id",
+              "value": "=={{ $json.args.app_id }}"
+            },
+            {
+              "name": "question_id",
+              "value": "=={{ $json.args.question_id }}"
+            },
+            {
+              "name": "answer",
+              "value": "=={{ $json.args.answer }}"
+            }
+          ]
+        },
         "options": {
-          "responseType": "json"
+          "response": {
+            "response": {
+              "fullResponse": "={{ true }}",
+              "neverError": "={{ true }}",
+              "responseFormat": "json"
+            }
+          }
         }
       },
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        96,
-        96
+        752,
+        -64
       ],
-      "id": "c8a9b7d2-78d2-4082-b3bf-3ef63fe98ba7",
+      "id": "9f7ce58d-897a-43dc-bb6e-dffb1b6e3ce3",
       "name": "State: Save"
     },
     {
       "parameters": {
-        "toolDescription": "Finalize the onboarding by creating YAML and PR. POST JSON payload as per contract.",
+        "toolDescription": "Finalize the onboarding by creating YAML and PR. POST JSON payload as per contract (body must be { payload: { ... } }).",
         "method": "POST",
-        "url": "http://n8n:5678/webhook/entra-onboard-finalize",
+        "url": "http://localhost:5678/webhook/entra-onboard-finalize",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('json', `{}`, 'json') }}",
-        "options": {
-          "responseType": "json"
-        }
+        "jsonBody": "={{ { payload: $fromAI('payload', {}, 'json') } }}",
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        96,
-        272
+        1168,
+        -128
       ],
-      "id": "2b65f17d-d6a5-4dcf-9b58-9fc1523ab578",
+      "id": "c650a083-acc3-4d89-a7d6-59ec0b4ddc3e",
       "name": "Finalize Onboarding"
     }
   ],
+  "pinData": {},
   "connections": {
     "When chat message received": {
       "main": [
@@ -228,17 +286,22 @@
           }
         ]
       ]
+    },
+    "Entra Onboarding Agent": {
+      "main": [
+        []
+      ]
     }
   },
-  "pinData": {},
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "a8c4b396-ff99-4cab-88fb-3aab5251f46e",
+  "versionId": "7f637303-0f64-4cec-874e-07a9e361b643",
   "meta": {
-    "templateId": "entra_onboarding_agent_chat"
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
   },
-  "id": "3fc27b49-4182-4b62-8ce2-8d300f6d944a",
+  "id": "4IlTNRZQWcS8Srjw",
   "tags": []
 }
