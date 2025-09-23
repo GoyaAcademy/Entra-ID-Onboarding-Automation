@@ -1,0 +1,36 @@
+application:
+  id: "PAYROLL-2025"
+  name: "My Payroll Dev"
+  environment: "prod" # e.g., dev, test, prod
+  custodian: "John Smith"
+  architect: "TBD"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "wsfed" # sso-idp or sso-sp
+  justification: "App accessed via company portal, uses WS-Federation protocol, frontend interactive login, with App Proxy but no KCD, production environment, custodian contact only, custom claim id_number, and no logout URL support."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - ""
+    - ""
+  logout_urls:
+    - ""
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - "TBD"
+    - "TBD"
+
+metadata:
+  createdBy: "demo.user"
+  createdAt: "2025-09-23T17:00:00.137Z"
+  correlationId: "360"
