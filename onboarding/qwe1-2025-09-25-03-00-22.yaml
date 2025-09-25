@@ -1,0 +1,36 @@
+application:
+  id: "qwe1"
+  name: "test 2 app"
+  environment: "prod" # e.g., dev, test, prod
+  custodian: ""
+  architect: ""
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "TBD" # sso-idp or sso-sp
+  justification: "SP-initiated chosen based on combined answers for initiation support, login flow, user entry point, deep linking, portal requirement, SaaS constraints, and protocol support."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - ""
+    - ""
+  logout_urls:
+    - ""
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "54321"
+  createdAt: "2025-09-25T03:00:22.657Z"
+  correlationId: "388"
