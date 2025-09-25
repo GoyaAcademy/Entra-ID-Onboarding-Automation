@@ -1,0 +1,36 @@
+application:
+  id: "poi1"
+  name: "pyroll test"
+  environment: "dev" # e.g., dev, test, prod
+  custodian: "jone doe"
+  architect: "jain doe"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "TBD" # sso-idp or sso-sp
+  justification: ""
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  reply_urls:
+    - ""
+    - ""
+  logout_urls:
+    - ""
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "098765"
+  createdAt: "2025-09-25T19:32:03.713Z"
+  correlationId: "461"
