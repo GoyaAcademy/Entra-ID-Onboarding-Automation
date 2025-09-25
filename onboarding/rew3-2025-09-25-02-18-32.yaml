@@ -1,0 +1,36 @@
+application:
+  id: "rew3"
+  name: "Test app"
+  environment: "dev" # e.g., dev, test, prod
+  custodian: "John Joe"
+  architect: "Jain Doe"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "TBD" # sso-idp or sso-sp
+  justification: "The application is a Single-page app that uses internal username/password authentication and role-based access via LDAP/Active Directory. It requires Entra ID integration for authorization only, supports SAML, and needs SSO. The provided redirect URL is used. No logout URLs are set. This matches the SAML SSO pattern without proxy."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  reply_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  logout_urls:
+    - ""
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "123456"
+  createdAt: "2025-09-25T02:18:32.672Z"
+  correlationId: "374"
