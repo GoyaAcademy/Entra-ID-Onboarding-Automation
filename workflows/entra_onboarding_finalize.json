@@ -14,7 +14,7 @@
       "typeVersion": 2,
       "position": [
         -2656,
-        112
+        16
       ],
       "webhookId": "c2da7cf8-ef5e-4a4a-8b80-04a95b3a236b"
     },
@@ -69,8 +69,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -2368,
-        112
+        -2432,
+        16
       ],
       "id": "e33e1922-d432-42a4-b29d-b229bc0e8559",
       "name": "Extract Payload"
@@ -92,19 +92,19 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        -2144,
-        -64
+        -2208,
+        -144
       ]
     },
     {
       "parameters": {
-        "jsCode": "const tpl = $json.data || '';\nconst sso = $json.sso || {};\nconst contacts = $json.contacts || {};\n\nconst replacements = {\n  application_id: String($json.app_id || 'TBD'),\n  application_name: String($json.application_name || 'TBD'),\n  environment: String($json.environment || 'TBD'),\n  custodian_name: String(contacts.custodian_name || 'TBD'),\n  architect_name: String(contacts.architect_name || 'TBD'),\n  operating_system: 'TBD',\n  database: 'TBD',\n  application_architecture: 'TBD',\n  sso_type: String(sso.protocol || 'TBD'),\n  justification_text: String($json.justification_text || 'TBD'),\n  entra_tenant_id: 'TBD',\n  entra_client_id: 'TBD',\n  redirect_url_1: String((sso.redirect_urls||[])[0] || ''),\n  redirect_url_2: String((sso.redirect_urls||[])[1] || ''),\n  reply_url_1: String((sso.reply_urls||[])[0] || ''),\n  reply_url_2: String((sso.reply_urls||[])[1] || ''),\n  logout_url_1: String((sso.logout_urls||[])[0] || ''),\n  logout_url_2: String((sso.logout_urls||[])[1] || ''),\n  saml_metadata_url: String(((sso.saml)||{}).metadata_url || ''),\n  certificate_1: String(((sso.saml)||{}).certificate || 'TBD'),\n  certificate_2: 'TBD',\n  creator: String($json.user_id || 'unknown'),\n  creation_timestamp: new Date().toISOString(),\n  correlation_id: $execution.id\n};\n\nlet filled = tpl;\nfor (const [k,v] of Object.entries(replacements)) {\n  const re = new RegExp(`{{\\\\s*${k}\\\\s*}}`, 'g');\n  filled = filled.replace(re, String(v));\n}\n\nconst stamp  = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');\nconst safeName = String($json.app_id || $json.application_name || 'app').replace(/[^a-zA-Z0-9._-]/g,'-');\nconst branch = `onboard/${safeName}-${stamp}`;\nconst path   = `onboarding/${safeName}-${stamp}.yaml`;\nconst message = `Onboard ${safeName} via agent`;\nconst content_b64 = Buffer.from(filled, 'utf8').toString('base64');\n\nreturn [{ json: { branch, path, message, content_b64, preview: filled.slice(0, 400) } }];"
+        "jsCode": "// 1) Read the template text (fallback to 'body' if your HTTP node returns there)\nconst tpl = String($json.data ?? $json.body ?? '');\n\n// 2) Pull structured values from the merged item\nconst sso      = $json.sso ?? {};\nconst contacts = $json.contacts ?? {};\nconst tech     = $json.technology ?? {};\nconst pattern  = $json.pattern ?? {};\nconst entra    = $json.entra_id ?? {};\n\n// helper for picking first/second URL safely\nconst pick = (arr, i) => Array.isArray(arr) && arr[i] != null ? String(arr[i]) : '';\n\n// 3) Build replacements for all {{placeholders}}\nconst replacements = {\n  application_id:          String($json.app_id ?? 'TBD'),\n  application_name:        String($json.application_name ?? 'TBD'),\n  environment:             String($json.environment ?? 'TBD'),\n  custodian_name:          String(contacts.custodian_name ?? 'TBD'),\n  architect_name:          String(contacts.architect_name ?? 'TBD'),\n  operating_system:        String(tech.os ?? 'TBD'),\n  database:                String(tech.db ?? 'TBD'),\n  application_architecture:String(tech.architecture ?? 'TBD'),\n\n  // If your agent computed a pattern, prefer it, else fall back to sso.type, else TBD\n  sso_type:                String(pattern.type ?? sso.type ?? 'TBD'),\n  justification_text:      String($json.justification_text ?? 'TBD'),\n\n  // If you already have Entra details in the item, use them; otherwise leave TBD\n  entra_tenant_id:         String(entra.tenant_id ?? 'TBD'),\n  entra_client_id:         String(entra.client_id ?? 'TBD'),\n\n  // URLs (pick first two if arrays are longer)\n  redirect_url_1:          pick(sso.redirect_urls, 0),\n  redirect_url_2:          pick(sso.redirect_urls, 1),\n  reply_url_1:             pick(sso.reply_urls, 0),\n  reply_url_2:             pick(sso.reply_urls, 1),\n  logout_url_1:            pick(sso.logout_urls, 0),\n  logout_url_2:            pick(sso.logout_urls, 1),\n\n  // SAML bits (present for SAML flows; fine if empty for WS-Fed)\n  saml_metadata_url:       String(sso.saml?.metadata_url ?? ''),\n  certificate_1:           String(sso.saml?.certificate ?? 'TBD'),\n  certificate_2:           String($json.certificate_2 ?? 'TBD'),\n\n  // Audit/meta\n  creator:                 String($json.user_id ?? 'unknown'),\n  creation_timestamp:      new Date().toISOString(),\n  correlation_id:          $execution.id,\n};\n\n// 4) Apply replacements\nlet filled = tpl;\nfor (const [k, v] of Object.entries(replacements)) {\n  filled = filled.replace(new RegExp(`{{\\\\s*${k}\\\\s*}}`, 'g'), String(v));\n}\n\n// 5) Name/branch/path and base64 content\nconst stamp    = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');\nconst safeName = String($json.app_id ?? $json.application_name ?? 'app').replace(/[^a-zA-Z0-9._-]/g, '-');\nconst branch   = `onboard/${safeName}-${stamp}`;\nconst path     = `onboarding/${safeName}-${stamp}.yaml`;\nconst message  = `Onboard ${safeName} via agent`;\nconst content_b64 = Buffer.from(filled, 'utf8').toString('base64');\n\n// 6) Return payload for the GitHub step\nreturn [{ json: { branch, path, message, content_b64, preview: filled.slice(0, 400) } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1920,
-        -64
+        -1760,
+        16
       ],
       "id": "5e90ab5d-c4b4-4462-b638-0659a715fba0",
       "name": "Fill Template"
@@ -135,8 +135,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1696,
-        -64
+        -1536,
+        16
       ],
       "id": "bca746bc-cc5e-4e16-bb99-5760994b2080",
       "name": "Repo Config"
@@ -157,8 +157,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1472,
-        -64
+        -1312,
+        16
       ],
       "id": "0a1594b9-9e57-4707-8646-293343a53034",
       "name": "Get Base Ref",
@@ -185,8 +185,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1280,
-        -64
+        -1088,
+        16
       ],
       "id": "144bd16c-f6d5-440e-baf3-dfb1d00540df",
       "name": "Extract Base SHA"
@@ -217,8 +217,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1072,
-        -64
+        -864,
+        16
       ],
       "id": "2cfa2bfd-ef04-412c-96f0-c61ca24b3ed7",
       "name": "Build Branch Request"
@@ -256,8 +256,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -832,
-        -64
+        -640,
+        16
       ],
       "id": "f9aabcb0-adfa-41b1-9d30-13b9a2ccd5da",
       "name": "Create Branch",
@@ -309,8 +309,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -624,
-        -64
+        -416,
+        16
       ],
       "id": "1e7a2b55-405d-48ee-92a5-8df47c4e1e34",
       "name": "Build Commit Request"
@@ -348,8 +348,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -400,
-        -64
+        -192,
+        16
       ],
       "id": "8d747995-6af5-41ba-8c11-681c6560168d",
       "name": "Commit File",
@@ -411,8 +411,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -192,
-        -64
+        32,
+        16
       ],
       "id": "d054458d-94ee-4881-b395-7c48b9092f1e",
       "name": "Build PR Request"
@@ -444,8 +444,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        32,
-        -64
+        256,
+        16
       ],
       "id": "77b9ec0b-878b-4f93-b0e4-49d91f7bff0d",
       "name": "Open PR",
@@ -467,11 +467,26 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        256,
-        -64
+        480,
+        16
       ],
       "id": "15526a04-62b8-41e1-bd2b-ccff3e22c40f",
       "name": "Respond (PR URL)"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1984,
+        16
+      ],
+      "id": "490c774c-9bb0-44ab-8ae1-82483ddce077",
+      "name": "Merge Template + Values"
     }
   ],
   "pinData": {},
@@ -494,6 +509,11 @@
             "node": "Fetch YAML Template",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Merge Template + Values",
+            "type": "main",
+            "index": 1
           }
         ]
       ]
@@ -502,7 +522,7 @@
       "main": [
         [
           {
-            "node": "Fill Template",
+            "node": "Merge Template + Values",
             "type": "main",
             "index": 0
           }
@@ -618,13 +638,24 @@
           }
         ]
       ]
+    },
+    "Merge Template + Values": {
+      "main": [
+        [
+          {
+            "node": "Fill Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "89d168a1-3b41-469d-8759-d9914fc14a7e",
+  "versionId": "3f3ba4eb-b544-4cb7-af4b-16e2b82a5beb",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
