@@ -1,0 +1,36 @@
+application:
+  id: "zxc1"
+  name: "app test 3"
+  environment: "prod" # e.g., dev, test, prod
+  custodian: ""
+  architect: ""
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "TBD" # sso-idp or sso-sp
+  justification: "App test 3 is accessed directly by users via URL, it's a web app using SAML without single logout or proxy features. Claims email and name are required."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  reply_urls:
+    - ""
+    - ""
+  logout_urls:
+    - ""
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "908"
+  createdAt: "2025-09-25T03:08:59.704Z"
+  correlationId: "398"
