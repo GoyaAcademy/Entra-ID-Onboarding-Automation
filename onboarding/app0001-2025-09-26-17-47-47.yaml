@@ -1,0 +1,36 @@
+application:
+  id: "app0001"
+  name: "Payroll Core"
+  environment: "prod" # e.g., dev, test, prod
+  custodian: "Priya Nair"
+  architect: "Alex Chen"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-sp-initiated" # sso-idp or sso-sp
+  justification: "Application users access it directly from a bookmark within the corporate network. As it is a new implementation and the application initiates login using the SAML protocol without proxy, SP-initiated SSO is appropriate."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  reply_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  logout_urls:
+    - "https://payroll.example.com/logout"
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "09876"
+  createdAt: "2025-09-26T17:47:47.230Z"
+  correlationId: "530"
