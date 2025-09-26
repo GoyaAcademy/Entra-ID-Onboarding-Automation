@@ -1,0 +1,36 @@
+application:
+  id: "mnb2"
+  name: "Pyroll 3"
+  environment: "["dev","test","prod"]" # e.g., dev, test, prod
+  custodian: "Jone Doe"
+  architect: "Doe Jay"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-sp-initiated" # sso-idp or sso-sp
+  justification: "Users access Pyroll 3 directly and see a login page, so the app initiates the SSO login flow. The app uses SAML protocol and doesn't require PKCE or app proxy. This fits the SP-initiated SAML pattern."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  reply_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  logout_urls:
+    - "https://payroll.example.com/logout"
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "09876"
+  createdAt: "2025-09-26T01:24:31.809Z"
+  correlationId: "478"
