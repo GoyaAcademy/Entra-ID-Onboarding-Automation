@@ -1,0 +1,102 @@
+[
+  {
+    "application": {
+      "id": "app0001",
+      "name": "Payroll Core",
+      "environment": "prod",
+      "custodian name": "Priya Nair",
+      "architect name": "Alex Chen",
+      "technology": { "os": "Windows Server 2019", "db": "SQL Server 2019", "architecture": "3-tier" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0002",
+      "name": "HR Self-Service Portal",
+      "environment": "prod",
+      "custodian name": "Jordan Lee",
+      "architect name": "Maya Patel",
+      "technology": { "os": "Linux (Ubuntu 22.04)", "db": "PostgreSQL 14", "architecture": "microservices" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0003",
+      "name": "Timesheet Tracker",
+      "environment": "test",
+      "custodian name": "Samuel Green",
+      "architect name": "Rita Gomez",
+      "technology": { "os": "Linux (RHEL 8)", "db": "Oracle 19c", "architecture": "2-tier" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0004",
+      "name": "Facilities Work Orders",
+      "environment": "prod",
+      "custodian name": "Avery Johnson",
+      "architect name": "Noah Brooks",
+      "technology": { "os": "Windows Server 2022", "db": "SQL Server 2022", "architecture": "3-tier" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0005",
+      "name": "Vendor Management",
+      "environment": "dev",
+      "custodian name": "Casey Wong",
+      "architect name": "Ivy Tran",
+      "technology": { "os": "Linux (AlmaLinux 9)", "db": "MySQL 8", "architecture": "microservices" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0006",
+      "name": "Capital Projects Console",
+      "environment": "prod",
+      "custodian name": "Elena Morozov",
+      "architect name": "Taylor Singh",
+      "technology": { "os": "Linux (Ubuntu 20.04)", "db": "PostgreSQL 13", "architecture": "3-tier" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0007",
+      "name": "Asset Registry",
+      "environment": "prod",
+      "custodian name": "Hannah Park",
+      "architect name": "Omar Haddad",
+      "technology": { "os": "Windows Server 2016", "db": "SQL Server 2017", "architecture": "2-tier" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0008",
+      "name": "Incident & Requests",
+      "environment": "test",
+      "custodian name": "Diego Alvarez",
+      "architect name": "Zoe Clarke",
+      "technology": { "os": "Linux (RHEL 9)", "db": "PostgreSQL 15", "architecture": "microservices" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0009",
+      "name": "Visitor Access",
+      "environment": "prod",
+      "custodian name": "Liam O’Connor",
+      "architect name": "Emily Nguyen",
+      "technology": { "os": "Linux (Debian 12)", "db": "MariaDB 10.6", "architecture": "3-tier" }
+    }
+  },
+  {
+    "application": {
+      "id": "app0010",
+      "name": "Analytics Hub",
+      "environment": "dev",
+      "custodian name": "Fatima Rahman",
+      "architect name": "Kai Müller",
+      "technology": { "os": "Linux (Ubuntu 22.04)", "db": "Snowflake (external)", "architecture": "data mesh" }
+    }
+  }
+]
