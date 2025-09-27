@@ -31,7 +31,10 @@
       "path": "PRIVACY.md",
       "purpose": "Privacy notes for the project."
     },
-
+    {
+      "path": "runtime-target.json",
+      "purpose": "Provide n8n runtime version."
+    },
     /* ----------------------------- Docker stack ----------------------------- */
     {
       "path": "Docker/docker-compose.yml",
