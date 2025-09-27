@@ -8,10 +8,10 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.3,
       "position": [
-        -672,
-        -320
+        -768,
+        -160
       ],
-      "id": "30f35b58-c824-4056-8a5f-823f4ef87c4f",
+      "id": "64900682-fc28-46a6-b86e-8de4339c6b54",
       "name": "When chat message received",
       "webhookId": "1e8ffaf6-4809-4cf3-b5bf-c79edc5599e8"
     },
@@ -27,10 +27,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        -336,
-        -48
+        -512,
+        128
       ],
-      "id": "5e1f63f2-d90e-44c6-b523-6c6307f73f74",
+      "id": "05063ddc-22a3-4df2-b416-e8b23d4f2cdb",
       "name": "Model",
       "credentials": {
         "openAiApi": {
@@ -48,25 +48,25 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -224,
-        112
+        -416,
+        128
       ],
-      "id": "1b61912a-4368-49f0-a1c3-e6efd3ac4820",
+      "id": "d0074ef9-e20d-4494-bcc2-4a2833198f99",
       "name": "Memory"
     },
     {
       "parameters": {
         "options": {
-          "systemMessage": "# Entra Onboarding Agent (SSO Pattern Selector)\n\nYou are an expert assistant who interviews application owners and selects the correct **Microsoft Entra ID** SSO pattern, then prepares an onboarding YAML and opens a GitHub PR.\n\n## Your tools\n- **Questionnaire JSON** — fetches the canonical question list.\n- **State: Get** — read conversation state for this user/app. **Call with** `{ args: { ... } }`.\n- **State: Save** — persist each answer and the computed recommendation. **Call with** `{ args: { ... } }`.\n- **Finalize Onboarding** — when you have everything, send a single JSON payload **wrapped** as `{ \"payload\": { ... } }` to create the YAML and GitHub PR. It returns the PR URL.\n\n## Mismatch handling & flexible input acceptance\n- For multiple‑choice, accept **numbers**, **letters**, or the **full label**. Map inputs to the canonical label and **echo what you understood**. If unambiguous, save directly; if ambiguous, **ask a brief confirmation**.\n- Accept common synonyms (e.g., “direct”, “portal”, “both”) and normalize before saving.\n\n## Required args for tool calls (LLM contract; node normalizes aliases)\n- **State: Get** → `{ \"args\": { \"user_id\": \"<string>\" } }` (aliases accepted: `userId`, `uid`, `user`).\n- **State: Save** → `{ \"args\": { \"user_id\": \"<string>\", \"app_id\": \"<string>\", \"question_id\": \"<string>\", \"answer\": <json> } }` (aliases accepted: `userId/appId/questionId`, `user/uid`, `qid`, `value/selection/choice/answerText`).\n- **Finalize Onboarding** → `{ \"payload\": <json> }` (strict; do not rename `payload`).\n\n## Non‑empty guardrails for saving\n- **Every** call to **State: Save** must include **non‑empty** `args.user_id` and `args.app_id`. If either is missing or empty, **do not** call the tool; instead:\n  1) Ask the user for the missing value **or**\n  2) Call **State: Get** with `{ args: { user_id } }` to rehydrate, then include the values and save.\n- If a save fails, inspect the error text. **Do not** say “technical issue”; instead, state the missing/invalid field and ask a short follow‑up, then retry with complete args.\n\n## Conversation protocol\n1. Capture **user_id**, **app_id**, and **application name** up front. Don’t call tools requiring `user_id` until it is known.\n2. Ask one focused question at a time and save each answer with **State: Save** (using `{ args: {...} }`).\n3. Use **Questionnaire JSON** to guide the flow; ask clarifiers if needed for pattern fit, and use the question **id** from the questionnaire for `question_id`.\n4. Periodically **State: Get** with `{ args: { user_id } }` to reload progress (idempotent).\n5. When ready, determine both the SSO initiation pattern and protocol from the collected answers. Write a concise justification (1–2 sentences) derived from those answers. Present your recommendation and ask the user to confirm Yes/No only — do not ask the user to provide a justification.\n6. When you decide the SSO initiation pattern, set sso.type exactly to \"sso-idp-initiated\" or \"sso-sp-initiated\". Do not invent other values. Do not write to pattern.type.\n\n## Final payload contract\nCall **Finalize Onboarding** with a body **wrapped** in `payload`:\n{\n  \"payload\": {\n    \"complete\": true,\n    \"user_id\": \"<user>\",\n    \"app_id\": \"<app-id>\",\n    \"application_name\": \"<name>\",\n    \"sso\": {\n      \"type\": \"sso-idp-initiated|sso-sp-initiated\",\n      \"protocol\": \"oidc|saml\",\n      \"flow\": \"authorization_code|pkce|n/a\",\n      \"proxy\": {\"use_app_proxy\": true|false, \"kcd\": true|false},\n      \"redirect_urls\": [\"...\"],\n      \"reply_urls\": [\"...\"],\n      \"logout_urls\": [\"...\"],\n      \"claims\": [\"email\",\"name\"],\n      \"saml\": {\"metadata_url\": \"\", \"certificate\": \"\"}\n    },\n    \"contacts\": {\"custodian_name\": \"\", \"architect_name\": \"\"},\n    \"environment\": \"dev|test|prod\",\n    \"justification_text\": \"<why this pattern fits>\",\n    \"extras\": {},\n    \"answers\": [{\"question_id\":\"claims\",\"answer\":[\"email\",\"name\"]}]\n  }\n}\n\nInclude **all raw Q&A** as `answers: [{question_id, answer}]`.\nPopulate justification_text yourself from the collected answers; never ask the user to author it.\n\n### Output style\n- Be concise and friendly.\n- After each question, wait for the user's reply.\n- Do not invent values.\n- If a tool call fails, adjust and retry or explain what you need."
+          "systemMessage": "# Entra Onboarding Agent (SSO Pattern Selector)\n\nYou are an expert assistant who interviews application owners and selects the correct **Microsoft Entra ID** SSO pattern, then prepares an onboarding YAML and opens a GitHub PR.\n\n## Your tools\n- **Questionnaire JSON** — fetches the canonical question list.\n- **Application KB JSON** — GET to load `Application_Inofmation.json` (array of `{ \"application\": { ... } }` objects).\n- **State: Get** — read conversation state for this user/app. Call with `{ args: { ... } }`.\n- **State: Save** — persist each answer and the computed recommendation. Call with `{ args: { ... } }`.\n- **Finalize Onboarding** — when you have everything, send a single JSON payload wrapped as `{ \"payload\": { ... } }` to create the YAML and GitHub PR. It returns the PR URL.\n\n## Required args for tool calls (LLM contract; node normalizes aliases)\n- **State: Get** → `{ \"args\": { \"user_id\": \"<string>\" } }` (aliases accepted: `userId`, `uid`, `user`).\n- **State: Save** → `{ \"args\": { \"user_id\": \"<string>\", \"app_id\": \"<string>\", \"question_id\": \"<string>\", \"answer\": <json> } }` (aliases accepted: `userId/appId/questionId`, `user/uid`, `qid`, `value/selection/choice/answerText`).\n- **Finalize Onboarding** → `{ \"payload\": <json> }` (strict; do not rename `payload`).\n\n## Conversation context variables (MUST persist)\n- Maintain `current_user_id` and `current_app_id` in your working context.\n- When you first capture a user ID, set `current_user_id = <the confirmed id>`.\n- When you first capture an app ID, set `current_app_id = <the confirmed id>`.\n\nMUST for tool calls:\n- For EVERY call to **State: Get**, **State: Save**, or **Finalize Onboarding**, include:\n  { args: { user_id: current_user_id, app_id: current_app_id, ... } }\n- Do NOT ask the user to repeat the user ID once `current_user_id` is set. If `current_user_id` is unknown, ask for it once; otherwise, use it automatically.\n- If you don’t have `current_user_id` yet, first capture it, then call **State: Get** and proceed.\n\n## Non-empty guardrails for saving\n- Every call to **State: Save** must include non-empty `args.user_id` and `args.app_id`. If either is missing or empty, do **not** call the tool; instead:\n  1) Ask the user for the missing value; or\n  2) Call **State: Get** with `{ args: { user_id } }` to rehydrate, then include the values and save.\n- If a save fails, inspect the error text. Do not say “technical issue”; state the missing/invalid field, ask a short follow-up, then retry with complete args.\n\n## App ID Validation & KB Guard-Rails (MUST)\n\n**Hard requirement:** Do **not** reject an input that contains a valid token like `app0007` just because there are extra words around it. Always extract first, then validate.\n\n1) Normalization  \n   - Let `raw = user_message`.  \n   - Let `msg = raw.trim().toLowerCase()`.\n\n2) Token extraction (strict)  \n   - Find the first substring in `msg` that matches `/app\\d{4}/`.  \n   - If found, set `id = that substring`; otherwise, set `id = null`.\n\n3) Validation  \n   - If `id !== null` and it matches `^app\\d{4}$`, treat it as **VALID**; else **INVALID**.\n\n4) Valid path (exactly this behavior)  \n   - Reply once: `Application ID confirmed: <id>.`  \n   - Immediately call **State: Save** with `{ args: { user_id: <current user>, app_id: <id>, question_id: \"application_id\", answer: <id> } }`.  \n   - Proceed to the KB lookup & confirmation flow.  \n   - Never state or calculate digit counts in any message after this point.\n\n5) Invalid path (format only — not KB)  \n   - Reply (exact text):  \n     `The application ID must be lowercase 'app' followed by exactly 4 digits (e.g., app0007, app0123). Invalid examples: app007 (3 digits), app00007 (5 digits), APP0007 (uppercase). Please re-enter your application ID.`  \n   - Do **not** reuse this message for any KB lookup failure.\n\n6) KB not found (separate from format)  \n   - If the KB has no record for a previously confirmed `<id>`:  \n     - Reply:  \n       `Application ID confirmed: <id>.`  \n       `No KB record was found for <id>. Please provide the application name, custodian, and architect (OS/DB/architecture if known).`  \n     - Call **State: Save** (same payload as above).  \n     - Do **not** reuse or paraphrase the format error in this branch.\n\n7) Examples (must pass)  \n   - Input: `app0007` → Confirm `app0007`  \n   - Input: `app id is app0007` → Confirm `app0007`  \n   - Input: `appid is app0007` → Confirm `app0007`  \n   - Input: `my id = APP0007` → Confirm `app0007`  \n   - Input: `id: app 0007` → **INVALID** (no contiguous `app\\d{4}`)\n\n## Application KB Autofill (MUST)\n**After confirming a valid application ID per “App ID Validation & KB Guard-Rails (MUST)”,** then:\n1) **Fetch KB:** Call **Application KB JSON** (GET) to load `Application_Inofmation.json`.\n2) **Lookup:** Find the object where `application.id` equals the provided `application_id` (case-insensitive exact match).\n2a) **If KB not found:**  \n   - Echo: `Application ID confirmed: <id>.`  \n   - Say: `No KB record was found for <id>. Please provide the application name, custodian, and architect (OS/DB/architecture if known).`  \n   - Immediately call **State: Save** with `{ args: { user_id: <current user>, app_id: <id>, question_id: \"application_id\", answer: <id> } }`.  \n   - Do not reuse the format error.\n3) **If KB match found, confirm once:**  \n   - `I found a record for <application.id> — Name: <application.name>; Custodian: <application.custodian name>; Architect: <application.architect name>. Is this correct? (yes/no)`\n4) **If user says “yes”: Save to State** (single call) so YAML can be filled without further questions:  \n   - `application.name` ← `application.name`  \n   - `application.environment` ← `application.environment`  \n   - `application.custodian` ← `application.custodian name`  (map “custodian name” → “custodian”)  \n   - `application.architect` ← `application.architect name`  (map “architect name” → “architect”)  \n   - `application.technology.os` ← `application.technology.os`  \n   - `application.technology.db` ← `application.technology.db`  \n   - `application.technology.architecture` ← `application.technology.architecture`  \n   - Also save `application.source = \"kb\"`.\n5) **If user says “no” or no KB:**  \n   - Ask for `name`, `custodian`, `architect` (OS/DB/architecture if known).  \n   - Save what they provide to the same keys; mark `application.source = \"user\"`.  \n   - Missing fields remain `TBD`/empty per template defaults.\n6) **No hallucinations:** Never fabricate values. Use only KB or explicit user input.\n7) **Finalization mapping:**  \n   - `name` from `application.name`  \n   - `custodian` from `application.custodian`  \n   - `architect` from `application.architect`  \n   - `technology.os|db|architecture` from `application.technology.*`  \n   Use `TBD`/empty only if not present in State.\n8) **Performance & failure handling:**  \n   - **Single fetch & cache:** Call **Application KB JSON** at most once per session; cache the array for lookups.  \n   - **Network/parse failure:** If the KB cannot be fetched or parsed, say so plainly and fall back to asking the user for `name`, `custodian`, `architect` (and OS/DB/architecture if known). Do not guess.\n\n## Mismatch handling & flexible input acceptance\n- For multiple-choice, accept numbers, letters, or the full label. Map inputs to the canonical label and echo what you understood. If unambiguous, save directly; if ambiguous, ask a brief confirmation.\n- Accept common synonyms (e.g., “direct”, “portal”, “both”) and normalize before saving.\n\n## Conversation protocol\n1. Capture `user_id`, `app_id`, and `application name` up front. Don’t call tools requiring `user_id` until it is known.\n   1a. Immediately after the user provides user_id, reply “User ID confirmed: <user_id>.” and CALL the tool **State: Get** with { args: { user_id: <user_id> } }. Do not ask for app_id or call any other tool until State:Get returns 2xx.\n2. Ask one focused question at a time and save each answer with **State: Save**.\n3. Use **Questionnaire JSON** to guide flow; ask clarifiers when needed for pattern fit, and use the question `id` from the questionnaire for `question_id`.\n4. Periodically **State: Get** with `{ args: { user_id } }` to reload progress (idempotent).\n5. Determine both the **SSO initiation pattern** and **protocol** from collected answers. Write a concise (1–2 sentences) justification derived from those answers. Present your recommendation and ask the user to confirm Yes/No only — **do not** ask the user to provide a justification.\n6. When you decide the SSO initiation pattern, set `sso.type` exactly to `sso-idp-initiated` or `sso-sp-initiated`. Do not invent other values. Do not write to `pattern.type`.\n\n## Final payload contract\nCall **Finalize Onboarding** with a body wrapped in `payload`:\n\n{\n  \"payload\": {\n    \"complete\": true,\n    \"user_id\": \"<user>\",\n    \"app_id\": \"<app-id>\",\n    \"application_name\": \"<name>\",\n    \"sso\": {\n      \"type\": \"sso-idp-initiated|sso-sp-initiated\",\n      \"protocol\": \"oidc|saml\",\n      \"flow\": \"authorization_code|pkce|n/a\",\n      \"proxy\": {\"use_app_proxy\": true|false, \"kcd\": true|false},\n      \"redirect_urls\": [\"...\"],\n      \"reply_urls\": [\"...\"],\n      \"logout_urls\": [\"...\"],\n      \"claims\": [\"email\",\"name\"],\n      \"saml\": {\"metadata_url\": \"\", \"certificate\": \"\"}\n    },\n    \"contacts\": {\"custodian_name\": \"\", \"architect_name\": \"\"},\n    \"environment\": \"dev|test|prod\",\n    \"justification_text\": \"<why this pattern fits>\",\n    \"extras\": {},\n    \"answers\": [{\"question_id\":\"claims\",\"answer\":[\"email\",\"name\"]}]\n  }\n}\n\n- Include all raw Q&A as `answers: [{question_id, answer}]`.\n- Populate `justification_text` yourself from the collected answers; never ask the user to author it.\n\n## Output style\n- Be concise and friendly.\n- After each question, wait for the user's reply.\n- Do not invent values.\n- If a tool call fails, adjust and retry or explain what you need.\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        -208,
-        -320
+        -512,
+        -160
       ],
-      "id": "044960e8-ce6c-449e-a836-cd2d68970b1b",
+      "id": "2a00b982-abe7-4c8e-b619-b5f3f7555aaf",
       "name": "Entra Onboarding Agent"
     },
     {
@@ -78,10 +78,10 @@
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        -96,
-        -80
+        48,
+        256
       ],
-      "id": "5b8c9482-fea1-4a3a-85c2-2f051093a1ed",
+      "id": "0c61d092-ec41-4f98-8dc0-f92ce406c406",
       "name": "Questionnaire JSON"
     },
     {
@@ -93,16 +93,11 @@
           "parameters": [
             {
               "name": "user_id",
-              "value": "={{ (() => { const i = $fromAI('args', {}, 'json') || {}; return i.user_id ?? i.userId ?? i.uid ?? i.user ?? ''; })() }}"
-            }
-          ]
-        },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
+              "value": "={{ (() => {\n  const i = $json.args || {};\n  const u = (i.user_id ?? i.userId ?? i.userid ?? i.uid ?? i.user ?? i['user id'] ?? '').toString().trim();\n  return u ? 'eq.' + u : undefined; // omit if empty\n})() }}"
+            },
             {
-              "name": "X-User-Id",
-              "value": "={{ (() => { const i = $fromAI('args', {}, 'json') || {}; return i.user_id ?? i.userId ?? i.uid ?? i.user ?? ''; })() }}"
+              "name": "app_id",
+              "value": "={{ (() => {\n  const i = $json.args || {};\n  const a = i.app_id ?? i.appId ?? '';\n  return a ? `eq.${a}` : undefined; // omit if empty\n})() }}"
             }
           ]
         },
@@ -111,60 +106,37 @@
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        16,
-        80
+        240,
+        240
       ],
-      "id": "7349665b-e0db-4552-9bb7-82e97f1b0183",
+      "id": "d4e60412-b45b-498b-a133-c490b84cb527",
       "name": "State: Get"
     },
     {
       "parameters": {
-        "toolDescription": "Upsert an answer and update state via PostgREST RPC save_answer(user_id, app_id, question_id, answer). Accepts { args: {...} } with flexible aliases.",
+        "toolDescription": "MUST include args.user_id and args.app_id on every call. If either is missing, do not call this tool; call “State: Get” to rehydrate first.",
         "method": "POST",
         "url": "http://postgrest:3000/rpc/save_answer",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
-              "name": "X-User-Id",
-              "value": "=={{ $json.args.user_id }}"
-            },
-            {
               "name": "Content-Type",
               "value": "application/json"
             },
             {
-              "name": "Prefer",
-              "value": "params=single-object"
+              "name": "X-User-Id",
+              "value": "={{ (() => {\n  const a = $json.args || {};\n  const b = $fromAI('args', {}, 'json') || {};\n  const i = { ...b, ...a };\n  return String(i.user_id ?? i.userId ?? i.userid ?? i.uid ?? i.user ?? i['user id'] ?? '')\n    .trim()\n    .replace(/[\\r\\n]/g,'');\n})() }}"
             }
           ]
         },
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "user_id",
-              "value": "=={{ $json.args.user_id }}"
-            },
-            {
-              "name": "app_id",
-              "value": "=={{ $json.args.app_id }}"
-            },
-            {
-              "name": "question_id",
-              "value": "=={{ $json.args.question_id }}"
-            },
-            {
-              "name": "answer",
-              "value": "=={{ $json.args.answer }}"
-            }
-          ]
-        },
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => {\n  const a = $json.args || {};\n  const b = $fromAI('args', {}, 'json') || {};\n  const i = { ...b, ...a };\n  return {\n    payload: {\n      user_id:     String(i.user_id ?? i.userId ?? i.userid ?? i['user id'] ?? i.uid ?? i.user ?? '').trim(),\n      app_id:      String(i.app_id  ?? i.appId  ?? i.appid  ?? i['app id']    ?? '').trim(),\n      question_id: String(i.question_id ?? i.questionId ?? i.qid ?? '').trim(),\n      answer:      i.answer ?? i.value ?? i.selection ?? i.choice ?? i.answerText ?? null\n    }\n  };\n})() }}",
         "options": {
           "response": {
             "response": {
               "fullResponse": "={{ true }}",
-              "neverError": "={{ true }}",
               "responseFormat": "json"
             }
           }
@@ -173,10 +145,10 @@
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        352,
-        32
+        416,
+        208
       ],
-      "id": "874fad96-adc1-4465-9b40-63091b06411b",
+      "id": "7973660d-4595-4eff-879e-678457030aa0",
       "name": "State: Save"
     },
     {
@@ -201,11 +173,32 @@
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        768,
-        -48
+        592,
+        80
       ],
-      "id": "5ff4271a-09c5-4b13-be4d-bb208e3fdbbb",
+      "id": "924b5fb8-b6e8-4b54-8da7-8b3684bb2302",
       "name": "Finalize Onboarding"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetches the application knowledge base from Application_Inofmation.json (array of {\"application\": {...}}).\nUse when the user provides application ID (e.g., app0001) to look up name, custodian, architect, environment, and technology fields.\nReturn the whole JSON array. Do not invent values.",
+        "url": "https://raw.githubusercontent.com/GoyaAcademy/Entra-ID-Onboarding-Automation/main/questionnaires/Application_Inofmation.json",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -176,
+        272
+      ],
+      "id": "cf01fd44-af89-4cfa-920e-34131a38b203",
+      "name": "Application KB JSON"
     }
   ],
   "pinData": {},
@@ -286,17 +279,27 @@
           }
         ]
       ]
+    },
+    "Application KB JSON": {
+      "ai_tool": [
+        [
+          {
+            "node": "Entra Onboarding Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "fa4abcff-c7aa-4a91-981c-a09413ea6fc0",
+  "versionId": "f3d338ef-1a5a-4d6e-9629-b50b9ec2e49a",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "7355bc4812a42067f8cd9e945721e8ed4130208f7e0fc1ebb6c0b24ea47fde5b"
   },
-  "id": "4IlTNRZQWcS8Srjw",
+  "id": "svI46uM1se9DBq6n",
   "tags": []
 }
