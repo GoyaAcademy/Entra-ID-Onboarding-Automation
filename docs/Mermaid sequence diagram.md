@@ -75,5 +75,7 @@ sequenceDiagram
         Chat-->>U: Please provide name, custodian, architect (OS/DB/arch if known).
         Chat->>PGR: POST /rpc/save_answer
         Note right of PGR: payload: { user_id, app_id, question_id:"application_id", answer:"app0003" }
-        Note right of Chat: Save user-provided fields; mark source = "user"
+        Note right of Chat: Save user-provided fields;
+        Note right of Chat: mark source = "user"
+
     end
