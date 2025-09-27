@@ -1,0 +1,7 @@
+{
+  "n8n": {
+    "target": "1.111.0",
+    "import_schema": "v2",
+    "notes": "Set to match your Docker deployment. Update this and commit whenever you upgrade n8n."
+  }
+}
