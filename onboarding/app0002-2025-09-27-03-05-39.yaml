@@ -1,0 +1,36 @@
+application:
+  id: "app0002"
+  name: "HR Self-Service Portal"
+  environment: "prod" # e.g., dev, test, prod
+  custodian: "Jordan Lee"
+  architect: "Maya Patel"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-sp-initiated" # sso-idp or sso-sp
+  justification: "The application is accessed via a web portal, supports SAML protocol, uses SP-initiated SSO, and requires no proxy or KCD, which aligns with the SP-initiated SAML pattern recommendation."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  reply_urls:
+    - ""
+    - ""
+  logout_urls:
+    - "https://payroll.example.com/logout"
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "1235"
+  createdAt: "2025-09-27T03:05:39.252Z"
+  correlationId: "662"
