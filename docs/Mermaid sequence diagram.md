@@ -1,5 +1,3 @@
-```mermaid
-
 sequenceDiagram
     autonumber
     actor U as User
@@ -23,7 +21,8 @@ sequenceDiagram
     U->>Chat: "app id app0003"
     Chat->>Chat: Extract token & validate ^app\d{4}$
     Chat->>PGR: POST /rpc/save_answer
-    Note right of PGR: payload: { user_id, app_id, question_id:"application_id", answer:"app0003" }<br/>Header: X-User-Id: 098765
+    Note right of PGR: payload: { user_id, app_id, question_id:"application_id", answer:"app0003" }.
+    Note right of PGR: Header: X-User-Id: 098765
     PGR->>DB: select public.save_answer(payload jsonb)
     DB-->>PGR: 200 OK (upsert answers + state)
     PGR-->>Chat: 200 OK
@@ -50,7 +49,8 @@ sequenceDiagram
 
     %% 4) Finalization (YAML + PR)
     Chat->>Fin: POST /webhook/entra-onboard-finalize
-    Note right of Fin: payload includes { complete:true, user_id, app_id, application_name, sso:{...}, contacts:{...}, environment, justification_text, answers:[...] }<br/>Fetch template → fill placeholders → branch+commit+PR
+    Note right of Fin: payload includes { complete:true, user_id, app_id, application_name, sso:{...}, contacts:{...}, environment, justification_text, answers:[...] }.
+    Note right of Fin: Fetch template -> fill placeholders -> branch+commit+PR
     Fin->>GH: GET /repos/{owner}/{repo}/git/ref/heads/main
     GH-->>Fin: base SHA
     Fin->>GH: POST /repos/{owner}/{repo}/git/refs
@@ -61,15 +61,15 @@ sequenceDiagram
     GH-->>Fin: PR URL
 
     Fin-->>Chat: { status:"completed", prUrl, branch, path }
-    Chat-->>U: PR opened: <url>
+    Chat-->>U: PR opened: &lt;url&gt;
 
     %% Alternates
     alt App ID INVALID (no contiguous app####)
         Chat-->>U: Fixed format error message (single canonical text)
         Note right of Chat: Do not fetch KB or count digits again
     else KB not found for confirmed app####
-        Chat-->>U: Application ID confirmed: <id>. No KB record found; please provide name, custodian, architect (OS/DB/arch if known).
+        Chat-->>U: Application ID confirmed: &lt;id&gt;. No KB record found; please provide name, custodian, architect (OS/DB/arch if known).
         Chat->>PGR: POST /rpc/save_answer
-        Note right of PGR: payload: { user_id, app_id, question_id:"application_id", answer:"<id>" }
+        Note right of PGR: payload: { user_id, app_id, question_id:"application_id", answer:"&lt;id&gt;" }
         Note right of Chat: Save user-provided fields; mark source="user"
     end
