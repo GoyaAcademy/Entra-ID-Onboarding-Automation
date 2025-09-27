@@ -1,0 +1,36 @@
+application:
+  id: "app0003"
+  name: "Timesheet Tracker"
+  environment: "dev" # e.g., dev, test, prod
+  custodian: "Samuel Green"
+  architect: "Rita Gomez"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-sp-initiated" # sso-idp or sso-sp
+  justification: "Users start sign-on at the application (service provider) which supports the SAML protocol without requiring PKCE. No app proxy or KCD is needed, making SP-initiated SAML the best fit."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - "https://payroll.example.com/auth/callback"
+    - ""
+  reply_urls:
+    - ""
+    - ""
+  logout_urls:
+    - "https://payroll.example.com/logout"
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "098765"
+  createdAt: "2025-09-27T03:02:51.168Z"
+  correlationId: "651"
