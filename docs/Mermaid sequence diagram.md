@@ -62,15 +62,18 @@ sequenceDiagram
     GH-->>Fin: PR URL
 
     Fin-->>Chat: { status:"completed", prUrl, branch, path }
-    Chat-->>U: PR opened: &lt;url&gt;
+    Chat-->>U: PR opened: URL: https://example/pr/123
+
+    %% (blank line here separates flow from the alt block)
 
     %% Alternates
     alt App ID INVALID (no contiguous app####)
-        Chat-->>U: Fixed format error message (single canonical text)
-        Note right of Chat: Do not fetch KB or count digits again
+        Chat-->>U: Format error: please use app0000
+        Note right of Chat: Do not fetch KB or re-parse digits
     else KB not found for confirmed app####
-        Chat-->>U: Application ID confirmed: &lt;id&gt;. No KB record found; please provide name, custodian, architect (OS/DB/arch if known).
+        Chat-->>U: Application ID confirmed (ID: app0003). No KB record found.
+        Chat-->>U: Please provide name, custodian, architect (OS/DB/arch if known).
         Chat->>PGR: POST /rpc/save_answer
-        Note right of PGR: payload: { user_id, app_id, question_id:"application_id", answer:"&lt;id&gt;" }
-        Note right of Chat: Save user-provided fields; mark source="user"
+        Note right of PGR: payload: { user_id, app_id, question_id:"application_id", answer:"app0003" }
+        Note right of Chat: Save user-provided fields; mark source = "user"
     end
