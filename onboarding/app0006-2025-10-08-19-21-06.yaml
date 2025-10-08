@@ -1,0 +1,36 @@
+application:
+  id: "app0006"
+  name: "Capital Projects Console"
+  environment: "prod" # e.g., dev, test, prod
+  custodian: "Elena Morozov"
+  architect: "Taylor Singh"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-sp-initiated" # sso-idp or sso-sp
+  justification: "The application logs in users internally (SP-initiated) and does not support OAuth flows, so SP-initiated SAML is the appropriate protocol. Proxy use is not required."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - ""
+    - ""
+  logout_urls:
+    - ""
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "97531"
+  createdAt: "2025-10-08T19:21:06.447Z"
+  correlationId: "691"
