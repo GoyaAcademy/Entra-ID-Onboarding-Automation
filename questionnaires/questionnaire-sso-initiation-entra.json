@@ -1,702 +1,86 @@
 [
   {
     "id": "q1_login_flow",
-    "text": "How do users typically access the application?",
-    "options": ["Directly from a bookmark or URL", "Through a company portal or dashboard", "Both"],
-    "rationale": "Determines whether the flow should start from the IdP (portal) or SP (application URL).",
-    "next": ["q2_saml_support"]
-  },
-  {
-    "id": "q2_saml_support",
-    "text": "Does the application support SAML-based authentication?",
-    "options": ["Yes, SAML 2.0", "Yes, but only SAML 1.1", "No, supports OAuth/OIDC only", "No federated authentication support"],
-    "rationale": "Establishes whether SAML is an option and which flow types are technically possible.",
+    "text": "Where do people usually start sign-in?",
+    "options": ["In a company portal (MyApps/M365 app launcher)", "From the app’s web address or bookmark", "Both", "I’m not sure"],
+    "rationale": "Portal-first use leans IdP-initiated; starting at the app leans SP-initiated. Not decisive by itself.",
     "next": ["q3_initiation_support"]
   },
   {
     "id": "q3_initiation_support",
-    "text": "Which SSO initiation methods does the application natively support?",
-    "options": ["SP-initiated only", "IdP-initiated only", "Both SP-initiated and IdP-initiated"],
-    "rationale": "Identifies supported initiation flows to avoid mismatched configurations.",
-    "next": ["q4_app_architecture"]
-  },
-  {
-    "id": "q4_app_architecture",
-    "text": "What is the application’s architecture?",
-    "options": ["Single-tenant (one org per deployment)", "Multi-tenant (shared deployment across many orgs)", "Hybrid (supports both)"],
-    "rationale": "Impacts whether user context must be resolved at the SP side or can be controlled by IdP routing.",
-    "next": ["q5_user_entry_point"]
-  },
-  {
-    "id": "q5_user_entry_point",
-    "text": "Where do most users expect to begin their login journey?",
-    "options": ["Corporate portal (Entra MyApps, company intranet)", "Application’s login page", "Varies by user group"],
-    "rationale": "User experience expectations strongly influence initiation pattern selection.",
-    "next": ["q6_access_routing"]
-  },
-  {
-    "id": "q6_access_routing",
-    "text": "Does the application require routing users to different instances or tenants based on identity attributes?",
-    "options": ["Yes, users must be routed to specific tenants", "No, all users access the same tenant/instance"],
-    "rationale": "Routing requirements may favor IdP-initiated flows for attribute-based routing.",
-    "next": ["q7_saas_vs_onprem"]
-  },
-  {
-    "id": "q7_saas_vs_onprem",
-    "text": "Is the application SaaS-based or hosted on-premises?",
-    "options": ["SaaS", "On-premises", "Hybrid"],
-    "rationale": "SaaS providers may enforce specific initiation methods, while on-prem applications can be configured more flexibly.",
-    "next": ["q8_integration_method"]
-  },
-  {
-    "id": "q8_integration_method",
-    "text": "How is the application integrated with your network?",
-    "options": ["Accessible over the internet", "Accessible only via VPN or corporate network", "Exposed through Azure App Proxy or reverse proxy"],
-    "rationale": "Connectivity methods impact whether SP or IdP initiation is practical.",
+    "text": "Which SSO start methods does the app support?",
+    "options": ["Start from the app (SP-initiated)", "Start from the portal (IdP-initiated)", "Both", "I’m not sure"],
+    "rationale": "Feasibility gate: if only one is supported, that is the pattern.",
     "next": ["q9_deep_linking"]
   },
   {
     "id": "q9_deep_linking",
-    "text": "Does the application require deep linking to specific resources or modules?",
-    "options": ["Yes, users frequently need deep links", "No, users always start from a homepage", "Sometimes, depending on workflow"],
-    "rationale": "Deep linking requirements typically favor SP-initiated flows.",
-    "next": ["q10_mobile_support"]
-  },
-  {
-    "id": "q10_mobile_support",
-    "text": "Do users primarily access the application from mobile devices?",
-    "options": ["Yes, mobile-first", "No, mostly desktop", "Mixed usage"],
-    "rationale": "Mobile clients often rely on SP-initiated flows embedded in apps or SDKs.",
-    "next": ["q11_provisioning"]
-  },
-  {
-    "id": "q11_provisioning",
-    "text": "Does the application support Just-In-Time (JIT) provisioning?",
-    "options": ["Yes", "No", "Unknown"],
-    "rationale": "JIT provisioning may require SP-initiated flows where user attributes are passed during authentication.",
-    "next": ["q12_legacy_clients"]
-  },
-  {
-    "id": "q12_legacy_clients",
-    "text": "Are there legacy clients, thick clients, or non-browser integrations that need authentication?",
-    "options": ["Yes, legacy desktop or thick clients exist", "No, web/browser-only access"],
-    "rationale": "Legacy clients may have limited support and dictate initiation flow feasibility.",
-    "next": ["q13_audit_logging"]
-  },
-  {
-    "id": "q13_audit_logging",
-    "text": "Are there specific audit or compliance requirements for login tracking?",
-    "options": ["Yes, detailed login events required", "No, standard Entra ID logging is sufficient"],
-    "rationale": "Some audit requirements favor IdP-initiated flows for centralized event logging.",
-    "next": ["q14_failover"]
-  },
-  {
-    "id": "q14_failover",
-    "text": "Does the application require failover or redundancy across environments (e.g., DR site)?",
-    "options": ["Yes, multiple failover endpoints exist", "No, single environment"],
-    "rationale": "Failover configurations may need SP-initiated flows with dynamic endpoints.",
-    "next": ["q15_customization"]
-  },
-  {
-    "id": "q15_customization",
-    "text": "Does the application allow customizing the login page or branding?",
-    "options": ["Yes, customizable login page", "No, fixed login UI"],
-    "rationale": "Custom login experiences may constrain initiation flow options, especially for SaaS apps.",
-    "next": ["q16_idp_multiple"]
-  },
-  {
-    "id": "q16_idp_multiple",
-    "text": "Does the application need to support multiple IdPs (federation from multiple organizations)?",
-    "options": ["Yes, multiple IdPs", "No, single IdP only"],
-    "rationale": "Multi-IdP scenarios often favor SP-initiated flows to resolve identity provider context.",
-    "next": ["q17_protocols"]
-  },
-  {
-    "id": "q17_protocols",
-    "text": "Which federation protocols are supported?",
-    "options": ["SAML only", "OIDC only", "Both SAML and OIDC", "Custom/Proprietary"],
-    "rationale": "Protocol support influences initiation method feasibility and alignment with Entra ID.",
-    "next": ["q18_rbac"]
-  },
-  {
-    "id": "q18_rbac",
-    "text": "Does the application require role-based access (RBAC) or fine-grained authorization during login?",
-    "options": ["Yes, roles must be asserted in token/claims", "No, only identity is needed"],
-    "rationale": "RBAC may require SP-initiated flows to ensure role context at login.",
-    "next": ["q19_user_volume"]
-  },
-  {
-    "id": "q19_user_volume",
-    "text": "What is the expected user volume and concurrency?",
-    "options": ["Low (hundreds)", "Medium (thousands)", "High (tens of thousands or more)"],
-    "rationale": "Large-scale usage may favor IdP-initiated flows to simplify entry point and reduce load on SP redirects.",
-    "next": ["q20_idp_portal"]
-  },
-  {
-    "id": "q20_idp_portal",
-    "text": "Is it important for the application to appear in the Entra MyApps portal or Office 365 app launcher?",
-    "options": ["Yes, required", "No, not needed"],
-    "rationale": "Apps in the portal usually favor IdP-initiated flows.",
-    "next": ["q21_mfa"]
-  },
-  {
-    "id": "q21_mfa",
-    "text": "Does the application require MFA enforcement before access?",
-    "options": ["Yes, enforce MFA before login", "No, standard authentication only"],
-    "rationale": "IdP-initiated flows simplify enforcing MFA before app access.",
-    "next": ["q22_conditional_access"]
-  },
-  {
-    "id": "q22_conditional_access",
-    "text": "Do you need conditional access policies applied before app access?",
-    "options": ["Yes, must evaluate CA policies", "No, CA policies not needed"],
-    "rationale": "Conditional access integration is easier with IdP-initiated flows.",
-    "next": ["q23_slo"]
-  },
-  {
-    "id": "q23_slo",
-    "text": "Does the application support single logout (SLO)?",
-    "options": ["Yes, front-channel", "Yes, back-channel", "No"],
-    "rationale": "Logout handling may influence choice of initiation method.",
-    "next": ["q24_region_support"]
-  },
-  {
-    "id": "q24_region_support",
-    "text": "Is the SaaS application hosted across multiple regions requiring different endpoints?",
-    "options": ["Yes, multiple ACS URLs", "No, single endpoint"],
-    "rationale": "Multi-region SaaS may complicate IdP-initiated setups.",
-    "next": ["q25_api_auth"]
-  },
-  {
-    "id": "q25_api_auth",
-    "text": "Does the application expose APIs requiring authentication?",
-    "options": ["Yes, APIs use same federation", "Yes, APIs use separate keys/tokens", "No APIs"],
-    "rationale": "API auth often favors SP-initiated or OIDC flows rather than IdP-only initiation.",
-    "next": ["q26_id_mapping"]
-  },
-  {
-    "id": "q26_id_mapping",
-    "text": "Does the application require custom user ID mapping (e.g., employee ID instead of UPN)?",
-    "options": ["Yes, requires custom mapping", "No, standard UPN/email mapping works"],
-    "rationale": "Custom identifiers may require SP-initiated mapping flexibility.",
-    "next": ["q27_guest_access"]
-  },
-  {
-    "id": "q27_guest_access",
-    "text": "Does the application need to support guest/external users?",
-    "options": ["Yes, B2B/B2C guests", "No, internal users only"],
-    "rationale": "Guest user support is often better with IdP-initiated flows for simplified onboarding.",
-    "next": ["q28_cert_rotation"]
-  },
-  {
-    "id": "q28_cert_rotation",
-    "text": "How often does the application require SAML certificate rotation?",
-    "options": ["Standard (1–3 years)", "Frequent (less than 1 year)", "Custom process"],
-    "rationale": "Frequent rotations may favor IdP-initiated flows with centralized control.",
-    "next": ["q29_idp_redirects"]
-  },
-  {
-    "id": "q29_idp_redirects",
-    "text": "Does the application handle IdP redirects reliably?",
-    "options": ["Yes, supports redirects", "No, issues with redirects", "Unknown"],
-    "rationale": "Redirect handling reliability impacts feasibility of SP-initiated flows.",
-    "next": ["q30_custom_headers"]
-  },
-  {
-    "id": "q30_custom_headers",
-    "text": "Does the application require custom headers or tokens during login?",
-    "options": ["Yes", "No"],
-    "rationale": "Custom headers often require SP-initiated or proxy integration.",
-    "next": ["q31_cloud_to_cloud"]
-  },
-  {
-    "id": "q31_cloud_to_cloud",
-    "text": "Does the application integrate cloud-to-cloud with other SaaS requiring service account federation?",
-    "options": ["Yes", "No"],
-    "rationale": "Service integrations may not support IdP-initiated flows.",
-    "next": ["q32_proxy_requirement"]
-  },
-  {
-    "id": "q32_proxy_requirement",
-    "text": "Does the application require a reverse proxy or App Proxy to function?",
-    "options": ["Yes, App Proxy required", "No, directly accessible"],
-    "rationale": "Proxy setups may limit flow options, favoring IdP-initiated access.",
-    "next": ["q33_browser_support"]
-  },
-  {
-    "id": "q33_browser_support",
-    "text": "What browsers must be supported?",
-    "options": ["Modern only (Edge, Chrome)", "Legacy (IE11, older)"],
-    "rationale": "Legacy browsers may not handle SP redirects well.",
-    "next": ["q34_network_constraints"]
-  },
-  {
-    "id": "q34_network_constraints",
-    "text": "Does the application sit behind strict firewall or network constraints?",
-    "options": ["Yes", "No"],
-    "rationale": "Network constraints may require IdP-initiated flows to simplify access.",
-    "next": ["q35_user_migration"]
-  },
-  {
-    "id": "q35_user_migration",
-    "text": "Are users being migrated from a legacy IdP (e.g., AD FS, PingFederate)?",
-    "options": ["Yes", "No"],
-    "rationale": "Migration strategies may favor maintaining initiation type from old IdP.",
-    "next": ["q36_step_up_auth"]
-  },
-  {
-    "id": "q36_step_up_auth",
-    "text": "Does the app require step-up authentication for sensitive operations?",
-    "options": ["Yes, step-up required", "No"],
-    "rationale": "Step-up is easier to enforce via IdP-initiated conditional policies.",
-    "next": ["q37_saas_catalog"]
-  },
-  {
-    "id": "q37_saas_catalog",
-    "text": "Is the SaaS app listed in Entra’s gallery with a preconfigured SSO template?",
-    "options": ["Yes", "No"],
-    "rationale": "Gallery apps often specify the supported initiation method.",
-    "next": ["q38_token_lifetime"]
-  },
-  {
-    "id": "q38_token_lifetime",
-    "text": "Does the app require specific token/session lifetimes?",
-    "options": ["Yes, custom lifetimes", "No, defaults are fine"],
-    "rationale": "SP-initiated may better support custom lifetimes.",
-    "next": ["q39_fips"]
-  },
-  {
-    "id": "q39_fips",
-    "text": "Does the app require FIPS-compliant encryption?",
-    "options": ["Yes", "No"],
-    "rationale": "Compliance constraints may affect binding/flow type support.",
-    "next": ["q40_user_segments"]
-  },
-  {
-    "id": "q40_user_segments",
-    "text": "Do different user groups require different login flows?",
-    "options": ["Yes, multiple flows", "No, single flow"],
-    "rationale": "Multiple flows may require both IdP and SP initiated configurations.",
-    "next": ["q41_protocol_binding"]
-  },
-  {
-    "id": "q41_protocol_binding",
-    "text": "Which SAML bindings does the application support?",
-    "options": ["HTTP-Redirect", "HTTP-POST", "Artifact", "Unknown"],
-    "rationale": "Binding type compatibility can limit IdP-initiated or SP-initiated flows.",
-    "next": ["q42_encryption"]
-  },
-  {
-    "id": "q42_encryption",
-    "text": "Does the application require encrypted assertions?",
-    "options": ["Yes, encryption required", "No, not required"],
-    "rationale": "Encryption requirements may influence initiation method compatibility.",
-    "next": ["q43_signature"]
-  },
-  {
-    "id": "q43_signature",
-    "text": "Does the application require signed authentication requests?",
-    "options": ["Yes, mandatory", "No, optional"],
-    "rationale": "SP-initiated flows often require signed requests from the SP.",
-    "next": ["q44_key_rollover"]
-  },
-  {
-    "id": "q44_key_rollover",
-    "text": "How does the application handle certificate/key rollover?",
-    "options": ["Automatic metadata update", "Manual update required", "Does not support rollover"],
-    "rationale": "Manual rollover favors IdP-initiated for easier key lifecycle management.",
-    "next": ["q45_timeout"]
-  },
-  {
-    "id": "q45_timeout",
-    "text": "What is the application’s session timeout behavior?",
-    "options": ["Short timeout (<30 min)", "Standard (1–8 hours)", "Custom"],
-    "rationale": "Session handling may affect whether re-authentication works better with IdP or SP initiation.",
-    "next": ["q46_reauth"]
-  },
-  {
-    "id": "q46_reauth",
-    "text": "Does the application require re-authentication for sensitive functions?",
-    "options": ["Yes, step-up required", "No"],
-    "rationale": "Re-authentication scenarios often integrate better with IdP-driven initiation.",
-    "next": ["q47_cookie"]
-  },
-  {
-    "id": "q47_cookie",
-    "text": "Does the application use its own session cookies separate from IdP sessions?",
-    "options": ["Yes", "No"],
-    "rationale": "Separate cookies may complicate logout flows and favor SP initiation.",
-    "next": ["q48_id_mapping_complex"]
-  },
-  {
-    "id": "q48_id_mapping_complex",
-    "text": "Does the application need multiple attributes mapped (username, email, employee ID, GUID)?",
-    "options": ["Yes, multiple attributes required", "No, single identifier is sufficient"],
-    "rationale": "Complex mapping may favor SP-initiated flows.",
-    "next": ["q49_partner"]
-  },
-  {
-    "id": "q49_partner",
-    "text": "Is the application used by partner organizations or contractors?",
-    "options": ["Yes, partners must authenticate", "No, internal only"],
-    "rationale": "Partner scenarios often prefer IdP-initiated flows for B2B routing.",
-    "next": ["q50_contractors"]
-  },
-  {
-    "id": "q50_contractors",
-    "text": "Do contractors access via unmanaged devices?",
-    "options": ["Yes", "No"],
-    "rationale": "Unmanaged device scenarios may favor IdP-initiated flows with conditional access.",
+    "text": "Do people need links that open straight into a specific page or module?",
+    "options": ["Yes, often", "No", "Sometimes", "I’m not sure"],
+    "rationale": "Frequent deep links tend to work best with SP-initiated (or IdP with RelayState if the app supports targeted deep links).",
     "next": ["q51_multigeo"]
   },
   {
     "id": "q51_multigeo",
-    "text": "Is the application deployed in multiple geographic regions?",
-    "options": ["Yes, multi-geo", "No"],
-    "rationale": "Multi-geo apps may favor SP-initiated flows with region-specific URLs.",
-    "next": ["q52_latency"]
+    "text": "Is the app deployed in more than one region or with region-specific URLs?",
+    "options": ["Yes", "No", "I’m not sure"],
+    "rationale": "Multi-region/multi-instance commonly favors SP-initiated or separate app objects to land on the right endpoint.",
+    "next": ["q16_idp_multiple"]
   },
   {
-    "id": "q52_latency",
-    "text": "Is latency a critical factor for authentication?",
-    "options": ["Yes, sub-second required", "No"],
-    "rationale": "Latency-sensitive apps may favor SP-initiated to avoid additional redirects.",
-    "next": ["q53_custom_claims"]
+    "id": "q16_idp_multiple",
+    "text": "Do people from more than one organization/IdP need to sign in?",
+    "options": ["Yes, multiple organizations/IdPs", "No, only our organization", "I’m not sure"],
+    "rationale": "Multi-IdP scenarios often lean SP-initiated with realm discovery or multiple enterprise app objects.",
+    "next": ["q20_idp_portal"]
   },
   {
-    "id": "q53_custom_claims",
-    "text": "Does the app require custom claims in tokens?",
-    "options": ["Yes, multiple claims", "No, standard claims only"],
-    "rationale": "Custom claims often require SP-initiated flows for context.",
-    "next": ["q54_logging_detail"]
-  },
-  {
-    "id": "q54_logging_detail",
-    "text": "Does the app need detailed logging of authentication events?",
-    "options": ["Yes, extensive logs", "No, standard logs suffice"],
-    "rationale": "Detailed logs may be easier through IdP-initiated flows.",
-    "next": ["q55_support_model"]
-  },
-  {
-    "id": "q55_support_model",
-    "text": "Who manages the application?",
-    "options": ["Vendor-managed SaaS", "Internal IT team", "Hybrid"],
-    "rationale": "Vendor-managed SaaS may restrict initiation options.",
-    "next": ["q56_sla"]
-  },
-  {
-    "id": "q56_sla",
-    "text": "Does the application have strict SLAs for uptime?",
-    "options": ["Yes", "No"],
-    "rationale": "SLA requirements may favor initiation flows that minimize dependency on redirects.",
-    "next": ["q57_change_control"]
-  },
-  {
-    "id": "q57_change_control",
-    "text": "Does the application require formal change control for SSO changes?",
-    "options": ["Yes", "No"],
-    "rationale": "Rigid change processes may favor IdP-initiated flows for central management.",
-    "next": ["q58_failback"]
-  },
-  {
-    "id": "q58_failback",
-    "text": "Does the app need to fail back to password authentication if SSO fails?",
-    "options": ["Yes", "No"],
-    "rationale": "Fallback mechanisms often align better with SP initiation.",
-    "next": ["q59_license_model"]
-  },
-  {
-    "id": "q59_license_model",
-    "text": "Is licensing tied to user login method?",
-    "options": ["Yes, tied to federation", "No, independent"],
-    "rationale": "License enforcement may dictate initiation method.",
-    "next": ["q60_service_accounts"]
-  },
-  {
-    "id": "q60_service_accounts",
-    "text": "Does the application use service accounts or non-human identities?",
-    "options": ["Yes", "No"],
-    "rationale": "Service accounts may not support IdP-initiated flows.",
-    "next": ["q61_onboarding"]
-  },
-  {
-    "id": "q61_onboarding",
-    "text": "Is automated user onboarding required?",
-    "options": ["Yes, via SCIM/JIT", "No, manual provisioning"],
-    "rationale": "JIT provisioning often relies on SP-initiated flows.",
-    "next": ["q62_offboarding"]
-  },
-  {
-    "id": "q62_offboarding",
-    "text": "Is automated user offboarding required?",
-    "options": ["Yes, immediate deactivation", "No, manual process"],
-    "rationale": "Offboarding may favor IdP-initiated flows for central control.",
-    "next": ["q63_token_binding"]
-  },
-  {
-    "id": "q63_token_binding",
-    "text": "Does the application support token binding to devices?",
-    "options": ["Yes", "No"],
-    "rationale": "Advanced binding scenarios may restrict initiation flow choices.",
-    "next": ["q64_app_type"]
-  },
-  {
-    "id": "q64_app_type",
-    "text": "What type of application is it?",
-    "options": ["Web app", "Desktop client", "Mobile app", "API service"],
-    "rationale": "App type dictates which initiation flows are possible.",
-    "next": ["q65_ws_fed"]
-  },
-  {
-    "id": "q65_ws_fed",
-    "text": "Does the application support WS-Federation?",
-    "options": ["Yes", "No"],
-    "rationale": "WS-Fed apps often rely on IdP-initiated flows.",
-    "next": ["q66_nonbrowser"]
-  },
-  {
-    "id": "q66_nonbrowser",
-    "text": "Does the app require non-browser clients (CLI, SDKs)?",
-    "options": ["Yes", "No"],
-    "rationale": "Non-browser clients typically rely on SP-initiated or token-based flows.",
-    "next": ["q67_cert_auth"]
-  },
-  {
-    "id": "q67_cert_auth",
-    "text": "Does the app require certificate-based authentication?",
-    "options": ["Yes", "No"],
-    "rationale": "Certificate auth may dictate SP-initiated flows.",
-    "next": ["q68_passwordless"]
-  },
-  {
-    "id": "q68_passwordless",
-    "text": "Do you want to enable passwordless authentication?",
-    "options": ["Yes, required", "No"],
-    "rationale": "Passwordless flows are simpler to enforce via IdP initiation.",
-    "next": ["q69_b2c"]
-  },
-  {
-    "id": "q69_b2c",
-    "text": "Is the application exposed to external customers (B2C)?",
-    "options": ["Yes", "No"],
-    "rationale": "B2C apps usually favor IdP-initiated flows for controlled entry points.",
-    "next": ["q70_sensitive_data"]
-  },
-  {
-    "id": "q70_sensitive_data",
-    "text": "Does the application handle sensitive or regulated data?",
-    "options": ["Yes, regulated data", "No"],
-    "rationale": "Sensitive data apps may prefer IdP-initiated flows for strict access control.",
-    "next": ["q71_third_party"]
-  },
-  {
-    "id": "q71_third_party",
-    "text": "Does the app integrate with third-party IdPs?",
-    "options": ["Yes", "No"],
-    "rationale": "Third-party IdP integration may restrict initiation types.",
-    "next": ["q72_custom_login"]
-  },
-  {
-    "id": "q72_custom_login",
-    "text": "Does the app require a custom login flow (e.g., multi-step)?",
-    "options": ["Yes", "No"],
-    "rationale": "Custom login flows often need SP-initiated initiation.",
-    "next": ["q73_multi_factor_location"]
-  },
-  {
-    "id": "q73_multi_factor_location",
-    "text": "Where should MFA be enforced?",
-    "options": ["At IdP", "At SP", "Both"],
-    "rationale": "MFA enforcement location affects initiation flow.",
-    "next": ["q74_auth_fallback"]
-  },
-  {
-    "id": "q74_auth_fallback",
-    "text": "Does the app support fallback to local authentication?",
-    "options": ["Yes", "No"],
-    "rationale": "Fallback may favor SP initiation for local account handling.",
-    "next": ["q75_privileged"]
-  },
-  {
-    "id": "q75_privileged",
-    "text": "Does the app manage privileged access or admin functions?",
-    "options": ["Yes", "No"],
-    "rationale": "Privileged access apps may prefer IdP-initiated flows for CA enforcement.",
-    "next": ["q76_device_context"]
-  },
-  {
-    "id": "q76_device_context",
-    "text": "Does the app require device compliance checks?",
-    "options": ["Yes", "No"],
-    "rationale": "Device compliance is enforced at the IdP side, favoring IdP initiation.",
-    "next": ["q77_network_location"]
-  },
-  {
-    "id": "q77_network_location",
-    "text": "Does the app require network location-based access?",
-    "options": ["Yes", "No"],
-    "rationale": "Network rules align with IdP-driven policies.",
-    "next": ["q78_reporting"]
-  },
-  {
-    "id": "q78_reporting",
-    "text": "Is reporting and analytics required at the IdP level?",
-    "options": ["Yes", "No"],
-    "rationale": "Centralized reporting favors IdP initiation.",
-    "next": ["q79_token_format"]
-  },
-  {
-    "id": "q79_token_format",
-    "text": "Does the app require specific token formats (JWT, SAML assertions)?",
-    "options": ["Yes, custom format", "No, standard is fine"],
-    "rationale": "Custom token formats may favor SP-initiated.",
-    "next": ["q80_user_experience"]
-  },
-  {
-    "id": "q80_user_experience",
-    "text": "Is a seamless user experience (no extra clicks) critical?",
-    "options": ["Yes", "No"],
-    "rationale": "Seamless experiences may favor SP initiation for deep links.",
-    "next": ["q81_cross_domain"]
-  },
-  {
-    "id": "q81_cross_domain",
-    "text": "Does the app span multiple domains?",
-    "options": ["Yes", "No"],
-    "rationale": "Cross-domain apps may favor IdP-initiated with central routing.",
-    "next": ["q82_saml_metadata"]
-  },
-  {
-    "id": "q82_saml_metadata",
-    "text": "Can the app consume IdP metadata automatically?",
-    "options": ["Yes", "No"],
-    "rationale": "Automatic metadata exchange simplifies IdP-initiated flows.",
-    "next": ["q83_config_complexity"]
-  },
-  {
-    "id": "q83_config_complexity",
-    "text": "Is the app difficult to configure for SSO?",
-    "options": ["Yes", "No"],
-    "rationale": "Complex apps may favor IdP initiation for simpler configuration.",
+    "id": "q20_idp_portal",
+    "text": "Should the app appear in the company portal (MyApps/M365 app launcher)?",
+    "options": ["Yes", "No", "I’m not sure"],
+    "rationale": "Strong preference for portal discoverability leans IdP-initiated.",
     "next": ["q84_saas_constraints"]
   },
   {
     "id": "q84_saas_constraints",
-    "text": "Does the SaaS vendor restrict initiation flow?",
-    "options": ["Yes, only IdP", "Yes, only SP", "No"],
-    "rationale": "Vendor restrictions may eliminate one initiation option.",
-    "next": ["q85_user_training"]
+    "text": "Does the vendor say which SSO pattern you must use?",
+    "options": ["Yes — only IdP-initiated", "Yes — only SP-initiated", "No restrictions", "I’m not sure"],
+    "rationale": "Vendor mandates override preference and simplify the decision.",
+    "next": ["q37_saas_catalog"]
   },
   {
-    "id": "q85_user_training",
-    "text": "Can users be trained to use a new login flow?",
-    "options": ["Yes", "No"],
-    "rationale": "User adaptability may allow switching initiation methods.",
+    "id": "q37_saas_catalog",
+    "text": "Is the app listed in the Entra gallery (prebuilt SAML template)?",
+    "options": ["Yes", "No", "I’m not sure"],
+    "rationale": "Gallery templates usually encode the recommended SAML initiation pattern.",
     "next": ["q86_resource_links"]
   },
   {
     "id": "q86_resource_links",
-    "text": "Does the app require links from emails to work (magic links)?",
-    "options": ["Yes", "No"],
-    "rationale": "Email links often favor SP-initiated flows.",
-    "next": ["q87_migration_timeline"]
+    "text": "Do users open the app from emails/notifications using links (\"magic\" or deep links)?",
+    "options": ["Yes", "No", "I’m not sure"],
+    "rationale": "Email/deep links often push SP-initiated; IdP can work if RelayState targeting is supported.",
+    "next": ["q58_failback"]
   },
   {
-    "id": "q87_migration_timeline",
-    "text": "Is there a tight migration timeline?",
-    "options": ["Yes", "No"],
-    "rationale": "Short timelines may favor IdP initiation for faster rollout.",
-    "next": ["q88_regulatory"]
+    "id": "q58_failback",
+    "text": "If SSO is down, do you need a way to sign in locally?",
+    "options": ["Yes", "No", "I’m not sure"],
+    "rationale": "Local fallback journeys typically pair more cleanly with SP-initiated flows.",
+    "next": ["q14_failover"]
   },
   {
-    "id": "q88_regulatory",
-    "text": "Is the app subject to regulatory oversight (HIPAA, PCI, GDPR)?",
-    "options": ["Yes", "No"],
-    "rationale": "Compliance may dictate initiation type for auditing.",
-    "next": ["q89_us_fed"]
+    "id": "q14_failover",
+    "text": "Do you have DR/failover environments with different sign-in endpoints?",
+    "options": ["Yes", "No", "I’m not sure"],
+    "rationale": "Multiple endpoints/DR often favor SP-initiated or multiple app objects for targeted landing.",
+    "next": ["q43_signature"]
   },
   {
-    "id": "q89_us_fed",
-    "text": "Is the app used in US Federal environments?",
-    "options": ["Yes", "No"],
-    "rationale": "FedRAMP/FISMA compliance may restrict flow types.",
-    "next": ["q90_high_availability"]
-  },
-  {
-    "id": "q90_high_availability",
-    "text": "Does the app require high availability for authentication endpoints?",
-    "options": ["Yes", "No"],
-    "rationale": "HA requirements may favor IdP-initiated with redundant IdP endpoints.",
-    "next": ["q91_multicloud"]
-  },
-  {
-    "id": "q91_multicloud",
-    "text": "Is the app deployed across multiple cloud providers?",
-    "options": ["Yes", "No"],
-    "rationale": "Multicloud deployments may need SP initiation per environment.",
-    "next": ["q92_language"]
-  },
-  {
-    "id": "q92_language",
-    "text": "Does the app require multi-language login pages?",
-    "options": ["Yes", "No"],
-    "rationale": "Custom login pages may favor IdP initiation.",
-    "next": ["q93_analytics"]
-  },
-  {
-    "id": "q93_analytics",
-    "text": "Do you need analytics on app usage?",
-    "options": ["Yes", "No"],
-    "rationale": "Centralized analytics favor IdP initiation.",
-    "next": ["q94_legacy_protocols"]
-  },
-  {
-    "id": "q94_legacy_protocols",
-    "text": "Does the app require legacy protocols (Kerberos, NTLM)?",
-    "options": ["Yes", "No"],
-    "rationale": "Legacy protocols may limit initiation flow options.",
-    "next": ["q95_federated_logout"]
-  },
-  {
-    "id": "q95_federated_logout",
-    "text": "Does the app require federated logout with other apps?",
-    "options": ["Yes", "No"],
-    "rationale": "Logout federation often favors IdP initiation.",
-    "next": ["q96_sso_expiry"]
-  },
-  {
-    "id": "q96_sso_expiry",
-    "text": "What is the maximum SSO session length supported?",
-    "options": ["<1 hour", "1–8 hours", "Indefinite"],
-    "rationale": "Session lifetimes may impact initiation compatibility.",
-    "next": ["q97_device_cert"]
-  },
-  {
-    "id": "q97_device_cert",
-    "text": "Does the app require device certificates for access?",
-    "options": ["Yes", "No"],
-    "rationale": "Device certificate enforcement favors IdP-initiated flows.",
-    "next": ["q98_scalability"]
-  },
-  {
-    "id": "q98_scalability",
-    "text": "Does the app need to scale authentication across multiple identity providers or tenants?",
-    "options": ["Yes, multi-tenant scale required", "No, single tenant only"],
-    "rationale": "Scalability across IdPs or tenants may favor SP initiation for context resolution.",
-    "next": ["q99_identity_governance"]
-  },
-  {
-    "id": "q99_identity_governance",
-    "text": "Does the organization need identity governance integration with this app (e.g., access reviews, certifications)?",
-    "options": ["Yes, governance integration required", "No, governance not needed"],
-    "rationale": "Governance tools often integrate more cleanly with IdP-initiated flows.",
-    "next": ["q100_future_proofing"]
-  },
-  {
-    "id": "q100_future_proofing",
-    "text": "Is future-proofing for migration to modern protocols (OIDC, SCIM) important for this app?",
-    "options": ["Yes, critical for roadmap", "No, not a priority"],
-    "rationale": "Future-proofing considerations help decide between IdP and SP initiation based on protocol evolution.",
+    "id": "q43_signature",
+    "text": "Does the app require a signed SAML authentication request from the app?",
+    "options": ["Yes, mandatory", "No", "I’m not sure"],
+    "rationale": "If a signed AuthnRequest is mandatory, that implies SP-initiated.",
     "next": []
   }
 ]
