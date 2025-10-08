@@ -80,7 +80,178 @@
     "id": "q43_signature",
     "text": "Does the app require a signed SAML authentication request from the app?",
     "options": ["Yes, mandatory", "No", "I’m not sure"],
-    "rationale": "If a signed AuthnRequest is mandatory, that implies SP-initiated.",
+    "rationale": "If a signed AuthnRequest is mandatory, that implies SP-initiated and affects certificate handling.",
+    "next": ["q101_entity_id"]
+  },
+
+  // -------- Engineering setup begins here --------
+
+  {
+    "id": "q101_entity_id",
+    "text": "What is the app’s (SP) Entity ID / Audience URI (exact string)?",
+    "options": ["Paste the value as text", "I’m not sure"],
+    "rationale": "Required to set Identifier (Entity ID) in Entra and to validate Audience.",
+    "next": ["q102_acs_urls"]
+  },
+  {
+    "id": "q102_acs_urls",
+    "text": "List all ACS (Assertion Consumer Service) URLs that will receive SAML responses.",
+    "options": ["Paste one per line (include the primary)", "I’m not sure"],
+    "rationale": "Entra needs the Reply URL(s); include every environment/region.",
+    "next": ["q103_default_acs_index"]
+  },
+  {
+    "id": "q103_default_acs_index",
+    "text": "If there are multiple ACS URLs, which one is the default/primary?",
+    "options": ["Paste the ACS URL or index", "Not applicable — only one ACS", "I’m not sure"],
+    "rationale": "Determines the default Reply URL when multiple are configured.",
+    "next": ["q104_sp_login_url"]
+  },
+  {
+    "id": "q104_sp_login_url",
+    "text": "For SP-initiated SSO, what is the app’s SAML login/initiation URL?",
+    "options": ["Paste the URL", "Not applicable (IdP-only)", "I’m not sure"],
+    "rationale": "Used by users/bookmarks and for testing SP flows.",
+    "next": ["q105_idp_initiated_relaystate"]
+  },
+  {
+    "id": "q105_idp_initiated_relaystate",
+    "text": "For IdP-initiated SSO, does the app require a RelayState to reach the right tenant/page?",
+    "options": ["Yes — required", "No", "I’m not sure"],
+    "rationale": "Some apps need RelayState to route correctly from an IdP start.",
+    "next": ["q106_expected_relaystate_values"]
+  },
+  {
+    "id": "q106_expected_relaystate_values",
+    "text": "If RelayState is required, provide the expected format and sample value(s).",
+    "options": ["Paste examples (and per-tenant values if applicable)", "Not applicable", "I’m not sure"],
+    "rationale": "Lets Entra send the right RelayState for IdP-initiated launches.",
+    "next": ["q107_nameid_format"]
+  },
+  {
+    "id": "q107_nameid_format",
+    "text": "Which NameID format does the app expect?",
+    "options": ["emailAddress", "unspecified", "persistent", "transient", "I’m not sure"],
+    "rationale": "Ensures the IdP issues the correct NameID format.",
+    "next": ["q108_nameid_source"]
+  },
+  {
+    "id": "q108_nameid_source",
+    "text": "What value should NameID contain?",
+    "options": ["UPN", "Email address", "Employee ID", "Username (sAMAccountName)", "Other — I’ll specify", "I’m not sure"],
+    "rationale": "Defines the source attribute and any mapping needed.",
+    "next": ["q109_attribute_requirements"]
+  },
+  {
+    "id": "q109_attribute_requirements",
+    "text": "List any additional SAML attributes required (name and example value).",
+    "options": ["Paste list as text", "None", "I’m not sure"],
+    "rationale": "Engineering needs exact attribute names and expected samples.",
+    "next": ["q110_attribute_namespaces"]
+  },
+  {
+    "id": "q110_attribute_namespaces",
+    "text": "Do attributes require specific namespaces (e.g., urn:oid:...)?",
+    "options": ["Yes — I’ll list exact URNs", "No — simple names are fine", "I’m not sure"],
+    "rationale": "Prevents attribute-name mismatches at the SP.",
+    "next": ["q111_assertion_encryption"]
+  },
+  {
+    "id": "q111_assertion_encryption",
+    "text": "Does the app require encrypted SAML assertions?",
+    "options": ["Yes — I’ll provide the SP encryption certificate (public key)", "No", "I’m not sure"],
+    "rationale": "If yes, Entra must be configured to encrypt with the SP’s cert.",
+    "next": ["q112_signing_requirements"]
+  },
+  {
+    "id": "q112_signing_requirements",
+    "text": "What must be signed by the IdP?",
+    "options": ["Response only", "Assertion only", "Both response and assertion", "I’m not sure"],
+    "rationale": "Ensures signing settings match the SP’s validation rules.",
+    "next": ["q113_authnrequest_cert"]
+  },
+  {
+    "id": "q113_authnrequest_cert",
+    "text": "If AuthnRequest must be signed (SP-initiated), paste the SP signing certificate (PEM).",
+    "options": ["Paste certificate as text", "Not applicable", "I’m not sure"],
+    "rationale": "Enables the IdP to verify signed AuthnRequests from the SP.",
+    "next": ["q114_signature_algorithms"]
+  },
+  {
+    "id": "q114_signature_algorithms",
+    "text": "Which signature and digest algorithms are required?",
+    "options": ["SHA-256 (recommended)", "SHA-1", "Other — I’ll specify", "I’m not sure"],
+    "rationale": "Avoids algo mismatches that cause signature validation failures.",
+    "next": ["q115_binding_requirements"]
+  },
+  {
+    "id": "q115_binding_requirements",
+    "text": "Which SAML bindings should be used?",
+    "options": ["AuthnRequest via HTTP-Redirect; Response via HTTP-POST (default)", "Other — I’ll specify", "I’m not sure"],
+    "rationale": "Aligns SP expectations with IdP flow/bindings.",
+    "next": ["q116_logout_support"]
+  },
+  {
+    "id": "q116_logout_support",
+    "text": "Does the app support SAML Single Logout (SLO)?",
+    "options": ["Yes — supported", "No", "I’m not sure"],
+    "rationale": "Determines whether to configure SLO and test sign-out.",
+    "next": ["q117_logout_requirements"]
+  },
+  {
+    "id": "q117_logout_requirements",
+    "text": "If SLO is supported, provide Logout URL and any requirements (NameID format, SessionIndex).",
+    "options": ["Paste details as text", "Not applicable", "I’m not sure"],
+    "rationale": "IdP needs exact endpoint/parameters to complete SLO.",
+    "next": ["q118_metadata"]
+  },
+  {
+    "id": "q118_metadata",
+    "text": "Can you provide SP metadata XML (or URL), and/or should the SP consume IdP metadata?",
+    "options": ["I’ll paste SP metadata XML/URL", "SP cannot consume metadata — manual config", "I’m not sure"],
+    "rationale": "Metadata exchange reduces manual errors and speeds setup.",
+    "next": ["q119_cert_rollover"]
+  },
+  {
+    "id": "q119_cert_rollover",
+    "text": "How will certificate/key rollover be handled?",
+    "options": ["SP auto-updates from metadata", "Manual update with change window", "I’m not sure"],
+    "rationale": "Prevents outages during future cert rotations.",
+    "next": ["q120_test_accounts"]
+  },
+  {
+    "id": "q120_test_accounts",
+    "text": "Provide at least one test user (UPN/email) and expected NameID/attribute values.",
+    "options": ["Paste details as text", "I’m not sure"],
+    "rationale": "Enables end-to-end validation of claims and routing.",
+    "next": ["q121_environments"]
+  },
+  {
+    "id": "q121_environments",
+    "text": "Do you have separate non-prod and prod with different EntityIDs/ACS URLs?",
+    "options": ["Yes — I’ll list both sets", "No — single environment", "I’m not sure"],
+    "rationale": "Ensures correct values per environment and avoids cross-posting.",
+    "next": ["q122_contact_change"]
+  },
+  {
+    "id": "q122_contact_change",
+    "text": "Who approves/validates SSO changes (name/email)?",
+    "options": ["Paste contact(s)", "I’m not sure"],
+    "rationale": "Defines the change-control and escalation path.",
+    "next": ["q123_browser_constraints"]
+  },
+  {
+    "id": "q123_browser_constraints",
+    "text": "Any browser restrictions or blockers (legacy browsers, ITP, script blockers)?",
+    "options": ["Yes — I’ll list them", "No", "I’m not sure"],
+    "rationale": "Prevents surprises during rollout/user testing.",
+    "next": ["q124_clock_skew"]
+  },
+  {
+    "id": "q124_clock_skew",
+    "text": "Does the SP require a specific clock skew tolerance?",
+    "options": ["Default tolerance is fine", "Custom — I’ll specify (e.g., ±2 minutes)", "I’m not sure"],
+    "rationale": "Time skew mismatches cause intermittent SAML errors.",
     "next": []
   }
 ]
