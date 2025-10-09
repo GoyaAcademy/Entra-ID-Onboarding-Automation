@@ -1,0 +1,36 @@
+application:
+  id: "app0004"
+  name: "Facilities Work Orders"
+  environment: "TBD" # e.g., dev, test, prod
+  custodian: "Avery Johnson"
+  architect: "Noah Brooks"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-idp-initiated" # sso-idp or sso-sp
+  justification: "IDP-initiated SAML is selected because the user indicated no visible single sign-on URL from the app and uncertainty about SP initiation, typical of IDP-initiated flow, and provided a valid Entity ID and Reply URL for SAML, with logout support."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - "https://app.example.com/saml/acs"
+    - ""
+  logout_urls:
+    - "https://app.example.com/saml/slo"
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "987654"
+  createdAt: "2025-10-09T03:32:51.771Z"
+  correlationId: "806"
