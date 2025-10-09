@@ -1,0 +1,314 @@
+{
+  "version": "2025-10-08",
+  "questions": [
+    {
+      "id": "q_protocol",
+      "text": "Which protocol are we configuring now?",
+      "options": ["SAML", "OIDC"],
+      "phase": "discovery",
+      "appliesTo": ["both"],
+      "when": null,
+      "bind": "sso.protocol"
+    },
+
+    {
+      "id": "q_login_start",
+      "text": "Where do users usually start sign-in?",
+      "options": ["Company portal (MyApps/M365 launcher)", "From the app’s web address/bookmark", "Both", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["both"],
+      "when": { "truthy": { "var": "sso.protocol" } },
+      "bind": "context.signin_start"
+    },
+
+    /* ---------- SAML: discovery ---------- */
+    {
+      "id": "q_saml_initiation_support",
+      "text": "Which SSO start methods does the app support?",
+      "options": ["SP-initiated", "IdP-initiated", "Both", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "sso.saml.initiation_support"
+    },
+    {
+      "id": "q_saml_deep_linking",
+      "text": "Do users need deep links into specific pages/modules?",
+      "options": ["Yes, often", "No", "Sometimes", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "context.deep_linking"
+    },
+    {
+      "id": "q_saml_multiregion",
+      "text": "Is the app deployed in multiple regions or with region-specific URLs?",
+      "options": ["Yes", "No", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "context.multiregion"
+    },
+    {
+      "id": "q_saml_portal_visibility",
+      "text": "Should the app appear in the company portal (MyApps/M365 app launcher)?",
+      "options": ["Yes", "No", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "context.portal_visibility"
+    },
+    {
+      "id": "q_saml_vendor_constraint",
+      "text": "Does the vendor mandate a specific initiation pattern?",
+      "options": ["IdP-initiated only", "SP-initiated only", "No restrictions", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "context.vendor_initiation_constraint"
+    },
+    {
+      "id": "q_saml_gallery",
+      "text": "Is the app listed in the Entra gallery (SAML template available)?",
+      "options": ["Yes", "No", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "context.entra_gallery"
+    },
+    {
+      "id": "q_saml_local_fallback",
+      "text": "If SSO is unavailable, do you need a local sign-in fallback?",
+      "options": ["Yes", "No", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "context.local_fallback"
+    },
+    {
+      "id": "q_saml_failover",
+      "text": "Do you have DR/failover environments with different sign-in endpoints?",
+      "options": ["Yes", "No", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "context.failover_endpoints"
+    },
+    {
+      "id": "q_saml_signed_authnrequest",
+      "text": "Does the app require a signed SAML AuthnRequest from the SP?",
+      "options": ["Yes, mandatory", "No", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "sso.saml.signed_authnrequest"
+    },
+
+    /* ---------- SAML: config ---------- */
+    {
+      "id": "q_saml_entity_id",
+      "text": "Identifier (Entity ID)",
+      "options": [],
+      "phase": "config",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "sso.saml.entity_id"
+    },
+    {
+      "id": "q_saml_reply_acs",
+      "text": "Reply URL(s) — Assertion Consumer Service (primary first)",
+      "options": [],
+      "phase": "config",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "sso.reply_urls"
+    },
+    {
+      "id": "q_saml_sign_on_url",
+      "text": "Sign-on URL (SP-initiated start page) — optional",
+      "options": ["Not applicable"],
+      "phase": "config",
+      "appliesTo": ["saml"],
+      "when": {
+        "any": [
+          { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+          { "eq": [ { "var": "sso.saml.initiation_support" }, "SP-initiated" ] },
+          { "eq": [ { "var": "sso.saml.initiation_support" }, "Both" ] },
+          { "eq": [ { "var": "context.signin_start" }, "From the app’s web address/bookmark" ] },
+          { "eq": [ { "var": "context.signin_start" }, "Both" ] }
+        ]
+      },
+      "bind": "sso.saml.sign_on_url"
+    },
+    {
+      "id": "q_saml_logout_url",
+      "text": "Logout URL — optional",
+      "options": ["Not applicable"],
+      "phase": "config",
+      "appliesTo": ["saml"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "SAML" ] },
+      "bind": "sso.logout_urls"
+    },
+
+    /* ---------- OIDC: discovery ---------- */
+    {
+      "id": "q_oidc_client_type",
+      "text": "What type of client is this?",
+      "options": ["Web app (confidential server-side)", "Single-page app (SPA)", "Native mobile", "Machine-to-machine (daemon/service)", "Desktop/CLI"],
+      "phase": "discovery",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "sso.oidc.client_type"
+    },
+    {
+      "id": "q_oidc_pkce_required",
+      "text": "Does the client support or require PKCE?",
+      "options": ["Required", "Supported", "Not supported", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "sso.oidc.pkce"
+    },
+    {
+      "id": "q_oidc_multiregion",
+      "text": "Do you have multiple environments/regions needing distinct redirect URIs?",
+      "options": ["Yes", "No", "I'm not sure"],
+      "phase": "discovery",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "context.multiregion"
+    },
+
+    /* ---------- OIDC: config ---------- */
+    {
+      "id": "q_oidc_redirect_uris",
+      "text": "Redirect URI(s) (one per line or comma-separated)",
+      "options": [],
+      "phase": "config",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "sso.redirect_urls"
+    },
+    {
+      "id": "q_oidc_post_logout_redirect_uris",
+      "text": "Post-logout redirect URI(s) — optional",
+      "options": ["Not applicable"],
+      "phase": "config",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "sso.post_logout_redirect_urls"
+    },
+    {
+      "id": "q_oidc_response_types",
+      "text": "Response type(s)",
+      "options": ["code", "code id_token", "id_token (implicit, not recommended)"],
+      "phase": "config",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "sso.oidc.response_types"
+    },
+    {
+      "id": "q_oidc_grant_types",
+      "text": "Grant type(s)",
+      "options": ["authorization_code", "refresh_token", "client_credentials", "device_code"],
+      "phase": "config",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "sso.oidc.grant_types"
+    },
+    {
+      "id": "q_oidc_scopes",
+      "text": "Scopes required",
+      "options": ["openid", "profile", "email", "offline_access", "custom"],
+      "phase": "config",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "sso.oidc.scopes"
+    },
+    {
+      "id": "q_oidc_token_endpoint_auth",
+      "text": "Token endpoint auth method",
+      "options": ["client_secret_basic", "client_secret_post", "private_key_jwt", "none (public client)"],
+      "phase": "config",
+      "appliesTo": ["oidc"],
+      "when": { "eq": [ { "var": "sso.protocol" }, "OIDC" ] },
+      "bind": "sso.oidc.token_endpoint_auth_method"
+    },
+
+    /* ---------- Shared: config ---------- */
+    {
+      "id": "q_claims",
+      "text": "Attributes & claims (choose all that apply)",
+      "options": ["email", "name", "given_name", "family_name", "custom", "none/default"],
+      "phase": "config",
+      "appliesTo": ["both"],
+      "when": { "truthy": { "var": "sso.protocol" } },
+      "bind": "sso.claims"
+    },
+    {
+      "id": "q_roles",
+      "text": "App roles (choose all that apply)",
+      "options": ["User", "Admin", "Custom", "None/Default"],
+      "phase": "config",
+      "appliesTo": ["both"],
+      "when": { "truthy": { "var": "sso.protocol" } },
+      "bind": "access.roles"
+    },
+    {
+      "id": "q_assignments",
+      "text": "Who needs access?",
+      "options": ["Enter AD group(s) and/or user(s)"],
+      "phase": "config",
+      "appliesTo": ["both"],
+      "when": { "truthy": { "var": "sso.protocol" } },
+      "bind": "access.assignments"
+    }
+  ],
+
+  "flows": {
+    "saml": {
+      "discovery": [
+        "q_protocol",
+        "q_login_start",
+        "q_saml_initiation_support",
+        "q_saml_deep_linking",
+        "q_saml_multiregion",
+        "q_saml_portal_visibility",
+        "q_saml_vendor_constraint",
+        "q_saml_gallery",
+        "q_saml_local_fallback",
+        "q_saml_failover",
+        "q_saml_signed_authnrequest"
+      ],
+      "config": [
+        "q_saml_entity_id",
+        "q_saml_reply_acs",
+        "q_saml_sign_on_url",
+        "q_saml_logout_url",
+        "q_claims",
+        "q_roles",
+        "q_assignments"
+      ]
+    },
+    "oidc": {
+      "discovery": [
+        "q_protocol",
+        "q_login_start",
+        "q_oidc_client_type",
+        "q_oidc_pkce_required",
+        "q_oidc_multiregion"
+      ],
+      "config": [
+        "q_oidc_redirect_uris",
+        "q_oidc_post_logout_redirect_uris",
+        "q_oidc_response_types",
+        "q_oidc_grant_types",
+        "q_oidc_scopes",
+        "q_oidc_token_endpoint_auth",
+        "q_claims",
+        "q_roles",
+        "q_assignments"
+      ]
+    }
+  }
+}
