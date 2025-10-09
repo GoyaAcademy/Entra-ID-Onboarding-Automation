@@ -1,0 +1,36 @@
+application:
+  id: "app0002"
+  name: "HR Self-Service Portal"
+  environment: "TBD" # e.g., dev, test, prod
+  custodian: "Jordan Lee"
+  architect: "Maya Patel"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-idp-initiated" # sso-idp or sso-sp
+  justification: "Recommended IdP-initiated SAML SSO because the application supports an Entity ID and ACS URL with provided SAML metadata, includes Single Logout support, and does not require app proxy or KCD."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - "https://app.example.com/saml/acs"
+    - ""
+  logout_urls:
+    - "https://app.example.com/saml/slo"
+    - ""
+  saml_metadata_url: "https://app.example.com/saml/metadata"
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "987654"
+  createdAt: "2025-10-09T03:18:51.489Z"
+  correlationId: "790"
