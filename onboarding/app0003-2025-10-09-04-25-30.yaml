@@ -1,0 +1,36 @@
+application:
+  id: "app0003"
+  name: "Timesheet Tracker"
+  environment: "TBD" # e.g., dev, test, prod
+  custodian: "Samuel Green"
+  architect: "Rita Gomez"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-idp-initiated" # sso-idp or sso-sp
+  justification: "The application supports a dedicated Sign-on URL for SAML, but initiation from IdP or SP is unsure; hence, we assume IdP-initiated SSO pattern based on the Sign-on URL presence and SAML protocol."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - "https://app.example.com/saml/acs"
+    - ""
+  logout_urls:
+    - "https://app.example.com/saml/slo"
+    - ""
+  saml_metadata_url: "https://app.example.com/saml/metadata"
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "987654"
+  createdAt: "2025-10-09T04:25:30.866Z"
+  correlationId: "823"
