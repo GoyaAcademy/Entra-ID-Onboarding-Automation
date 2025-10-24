@@ -1,0 +1,36 @@
+application:
+  id: "app0007"
+  name: "Asset Registry"
+  environment: "TBD" # e.g., dev, test, prod
+  custodian: "Hannah Park"
+  architect: "Omar Haddad"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-sp-initiated" # sso-idp or sso-sp
+  justification: "The application uses SAML protocol with SP-initiated SSO as the main pattern; the Entity ID and ACS URLs confirm it is SP-initiated. No app proxy or KCD needed as no question indicated those requirements."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - "https://app.example.com/saml/acs"
+    - ""
+  logout_urls:
+    - "https://app.example.com/saml/slo"
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "98765"
+  createdAt: "2025-10-24T14:14:03.608Z"
+  correlationId: "893"
