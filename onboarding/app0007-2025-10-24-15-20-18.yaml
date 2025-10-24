@@ -1,0 +1,36 @@
+application:
+  id: "app0007"
+  name: "Asset Registry"
+  environment: "TBD" # e.g., dev, test, prod
+  custodian: "Hannah Park"
+  architect: "Omar Haddad"
+  technology:
+    os: "TBD"
+    db: "TBD"
+    architecture: "TBD"
+
+pattern:
+  type: "sso-sp-initiated" # sso-idp or sso-sp
+  justification: "The SSO pattern is SP-initiated using SAML protocol because users start authentication at the application login page and the application uses SAML endpoints such as Entity ID and ACS URLs."
+
+entra_id:
+  tenant_id: "TBD"
+  client_id: "TBD"
+  redirect_urls:
+    - ""
+    - ""
+  reply_urls:
+    - "https://app.example.com/saml/acs"
+    - ""
+  logout_urls:
+    - "https://app.example.com/saml/slo"
+    - ""
+  saml_metadata_url: ""
+  certificates:
+    - ""
+    - "TBD"
+
+metadata:
+  createdBy: "987654"
+  createdAt: "2025-10-24T15:20:18.903Z"
+  correlationId: "904"
